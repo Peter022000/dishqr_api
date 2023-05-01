@@ -17,7 +17,6 @@ public class DishService {
     private final DishRepository dishRepository;
 
     public List<Dish> getAllDishes() {
-        dishRepository.save(new Dish(Type.soup,"test",123.00,List.of("test,test")));
         return dishRepository.findAll();
     }
 }
