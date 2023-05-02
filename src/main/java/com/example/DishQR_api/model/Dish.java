@@ -4,7 +4,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -12,13 +11,13 @@ import java.util.List;
 public class Dish {
     @Id
     private String id;
-    private Type type;
+    private DishType dishType;
     private String name;
     private Double price;
     private List<String> ingredients;
 
-    public Dish(Type type, String name, Double price, List<String> ingredients) {
-        this.type = type;
+    public Dish(DishType dishType, String name, Double price, List<String> ingredients) {
+        this.dishType = dishType;
         this.name = name;
         this.price = price;
         this.ingredients = ingredients;
