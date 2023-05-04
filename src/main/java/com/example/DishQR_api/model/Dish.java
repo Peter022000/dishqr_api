@@ -6,6 +6,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
+enum DishType {
+    mainCourse, soup
+}
+
 @Data
 @Document("dishes")
 public class Dish {
