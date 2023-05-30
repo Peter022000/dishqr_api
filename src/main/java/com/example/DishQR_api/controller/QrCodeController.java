@@ -24,6 +24,10 @@ public class QrCodeController {
 
         Optional<QrCode> qrCode = qrCodeService.checkCode(id);
 
-        return ResponseEntity.ok(qrCode.get());
+        if(qrCode.isEmpty()){
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(qrCode.get());
+        }
     }
 }
