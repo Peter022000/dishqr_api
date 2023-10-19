@@ -3,6 +3,7 @@ package com.example.DishQR_api.controller;
 import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.service.DishService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,7 @@ public class DishController {
     private final DishService dishService;
 
     @GetMapping(path = "/getAllDishes")
+    @PreAuthorize("hasRole('ADMIN')") // todo usunąć, tylko do testów
     public List<Dish> getAllDishes(){
         return dishService.getAllDishes();
     }
