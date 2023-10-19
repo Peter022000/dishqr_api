@@ -5,6 +5,7 @@ import com.example.DishQR_api.dto.SignInRequest;
 import com.example.DishQR_api.dto.SignUpRequest;
 import com.example.DishQR_api.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,13 +18,24 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
+//    @PostMapping("/signup")
+//    public JwtAuthenticationResponse signup(@RequestBody SignUpRequest request) {
+//        return authenticationService.signup(request);
+//    }
+//
+//    @PostMapping("/signin")
+//    public JwtAuthenticationResponse signin(@RequestBody SignInRequest request) {
+//        return authenticationService.signin(request);
+//    }
+
     @PostMapping("/signup")
-    public JwtAuthenticationResponse signup(@RequestBody SignUpRequest request) {
+    public ResponseEntity<?> signup(@RequestBody SignUpRequest request) {
         return authenticationService.signup(request);
     }
 
     @PostMapping("/signin")
-    public JwtAuthenticationResponse signin(@RequestBody SignInRequest request) {
+    public ResponseEntity<?> signin(@RequestBody SignInRequest request) {
         return authenticationService.signin(request);
     }
+
 }
