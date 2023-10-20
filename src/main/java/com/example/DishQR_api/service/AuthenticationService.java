@@ -73,13 +73,12 @@ public class AuthenticationService {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-            var user = userRepository.findByEmail(request.getEmail())
+            User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
-            var jwt = jwtService.generateToken(user);
+            String jwt = jwtService.generateToken(user);
             return ResponseEntity.ok(JwtAuthenticationResponse.builder().token(jwt).build());
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
     }
-
 }

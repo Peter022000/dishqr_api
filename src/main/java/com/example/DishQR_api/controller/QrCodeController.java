@@ -1,11 +1,8 @@
 package com.example.DishQR_api.controller;
 
-import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.model.QrCode;
-import com.example.DishQR_api.service.OrderService;
 import com.example.DishQR_api.service.QrCodeService;
 import lombok.AllArgsConstructor;
-import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
