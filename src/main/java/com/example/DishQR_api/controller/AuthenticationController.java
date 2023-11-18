@@ -6,10 +6,8 @@ import com.example.DishQR_api.dto.SignUpRequest;
 import com.example.DishQR_api.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -38,4 +36,11 @@ public class AuthenticationController {
         return authenticationService.signin(request);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PutMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestParam String oldPassword,
+                                                 @RequestParam String newPassword,
+                                                 @RequestParam String repeatNewPassword) {
+        return authenticationService.changePassword(oldPassword, newPassword, repeatNewPassword);
+    }
 }

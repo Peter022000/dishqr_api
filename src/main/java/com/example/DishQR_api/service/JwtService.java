@@ -47,6 +47,7 @@ public class JwtService {
         extraClaims.put("role", userDetails.getAuthorities());
         return Jwts
                 .builder()
+                .setHeaderParam("typ","JWT")
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))

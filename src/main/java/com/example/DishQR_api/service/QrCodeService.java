@@ -1,10 +1,7 @@
 package com.example.DishQR_api.service;
 
 
-import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.model.QrCode;
-import com.example.DishQR_api.model.QrCodeType;
-import com.example.DishQR_api.repository.OrderRepository;
 import com.example.DishQR_api.repository.QrCodeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
