@@ -1,7 +1,6 @@
 package com.example.DishQR_api.controller;
 
 import com.example.DishQR_api.dto.ChangePasswordRequest;
-import com.example.DishQR_api.dto.JwtAuthenticationResponse;
 import com.example.DishQR_api.dto.SignInRequest;
 import com.example.DishQR_api.dto.SignUpRequest;
 import com.example.DishQR_api.service.AuthenticationService;
