@@ -21,22 +21,22 @@ import java.util.List;
 public class User implements UserDetails {
 
     @Id
-    String id;
+    private String id;
 
-    String firstName;
+    private String firstName;
 
-    String lastName;
+    private String lastName;
 
     @Indexed(unique = true)
-    String email;
+    private String email;
 
-    String password;
+    private String password;
 
-    Role role;
+    private Role role;
 
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
-    LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,5 +1,6 @@
 package com.example.DishQR_api.service;
 
+import com.example.DishQR_api.dto.ChangePasswordRequest;
 import com.example.DishQR_api.dto.JwtAuthenticationResponse;
 import com.example.DishQR_api.dto.SignInRequest;
 import com.example.DishQR_api.dto.SignUpRequest;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,22 +86,19 @@ public class AuthenticationService {
         }
     }
 
-    public ResponseEntity<String> changePassword(String oldPassword,
-                                                 String newPassword,
-                                                 String repeatNewPassword
-                                                 ) {
+    public ResponseEntity<String> changePassword(ChangePasswordRequest changePasswordRequest) {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, oldPassword));
+                    new UsernamePasswordAuthenticationToken(email, changePasswordRequest.getOldPassword()));
             Optional<User> user = userRepository.findByEmail(email);
 
             if(user.isEmpty()){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email");
             }
 
-            if(!newPassword.equals(repeatNewPassword)) {
+            if(!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getRepeatNewPassword())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords dont match");
             }
 
@@ -111,7 +108,7 @@ public class AuthenticationService {
                     .firstName(user.get().getFirstName())
                     .lastName(user.get().getLastName())
                     .email(user.get().getEmail())
-                    .password(passwordEncoder.encode(newPassword))
+                    .password(passwordEncoder.encode(changePasswordRequest.getNewPassword()))
                     .role(user.get().getRole())
                     .createdAt(user.get().getCreatedAt())
                     .build();
@@ -119,10 +116,8 @@ public class AuthenticationService {
             userService.save(userChangePassword);
 
             return ResponseEntity.ok("Password has been changed");
-
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
-
     }
 }

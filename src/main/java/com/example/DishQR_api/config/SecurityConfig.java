@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/users/signup", "/users/signin").permitAll()
                         .requestMatchers(HttpMethod.GET, "/dishes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/order/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/order/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/qrCode/**").permitAll()
                         .anyRequest().authenticated()
                 )

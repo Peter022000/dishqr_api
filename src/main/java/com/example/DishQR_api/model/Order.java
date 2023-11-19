@@ -1,25 +1,25 @@
 package com.example.DishQR_api.model;
 
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 @Document("orders")
 public class Order {
     @Id
     private String id;
-    private Integer tableNo;
+    private String userId;
+    private String tableNoId;
     private Double cost;
-    private List<OrderList> order;
+    private List<OrderItem> order;
     private PaymentMethod paymentMethod;
-
-    public Order(Integer tableNo, Double cost, List<OrderList> order, PaymentMethod paymentMethod) {
-        this.tableNo = tableNo;
-        this.cost = cost;
-        this.order = order;
-        this.paymentMethod = paymentMethod;
-    }
+    private LocalDateTime date;
 }

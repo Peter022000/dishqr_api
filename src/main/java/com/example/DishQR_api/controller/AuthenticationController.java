@@ -1,5 +1,6 @@
 package com.example.DishQR_api.controller;
 
+import com.example.DishQR_api.dto.ChangePasswordRequest;
 import com.example.DishQR_api.dto.JwtAuthenticationResponse;
 import com.example.DishQR_api.dto.SignInRequest;
 import com.example.DishQR_api.dto.SignUpRequest;
@@ -38,9 +39,7 @@ public class AuthenticationController {
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PutMapping("/changePassword")
-    public ResponseEntity<String> changePassword(@RequestParam String oldPassword,
-                                                 @RequestParam String newPassword,
-                                                 @RequestParam String repeatNewPassword) {
-        return authenticationService.changePassword(oldPassword, newPassword, repeatNewPassword);
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        return authenticationService.changePassword(changePasswordRequest);
     }
 }

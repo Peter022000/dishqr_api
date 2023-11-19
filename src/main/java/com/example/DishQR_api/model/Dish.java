@@ -1,12 +1,16 @@
 package com.example.DishQR_api.model;
 
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 @Document("dishes")
 public class Dish {
     @Id
@@ -15,11 +19,4 @@ public class Dish {
     private String name;
     private Double price;
     private List<String> ingredients;
-
-    public Dish(DishType dishType, String name, Double price, List<String> ingredients) {
-        this.dishType = dishType;
-        this.name = name;
-        this.price = price;
-        this.ingredients = ingredients;
-    }
 }
