@@ -18,7 +18,7 @@ public class DishController {
     private final DishService dishService;
 
     @GetMapping(path = "/getAllDishes")
-    @PreAuthorize("hasRole('ADMIN')") // todo usunąć, tylko do testów
+//    @PreAuthorize("hasRole('ADMIN')") // todo usunąć, tylko do testów
     public List<Dish> getAllDishes(){
         return dishService.getAllDishes();
     }
