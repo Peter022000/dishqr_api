@@ -98,6 +98,10 @@ public class AuthenticationService {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email");
             }
 
+            if(changePasswordRequest.getNewPassword().equals(changePasswordRequest.getOldPassword())){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The old password and new are the same");
+            }
+
             if(!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getRepeatNewPassword())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords dont match");
             }
