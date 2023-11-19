@@ -26,7 +26,6 @@ public class OrderController {
     }
 
     @GetMapping(path = "/getOrders")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ResponseEntity<?> getOrders(){
         return orderService.getOrders();
     }
