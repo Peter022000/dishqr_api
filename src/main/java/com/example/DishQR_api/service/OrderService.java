@@ -25,10 +25,6 @@ public class OrderService {
 
     private final QrCodeRepository qrCodeRepository;
 
-    public void sendOrder(Order order) {
-        orderRepository.save(order);
-    }
-
     public ResponseEntity<?> addToOrder(Order order, String dishId) {
 
         Optional<Dish> dish = dishRepository.findById(dishId);
@@ -90,6 +86,7 @@ public class OrderService {
         }
 
         order.setCost(recalculateCost(order));
+        order.setStatus(StatusType.NEW);
 
         return ResponseEntity.ok(order);
     }
@@ -194,4 +191,14 @@ public class OrderService {
         return Math.round(value * 100.0) / 100.0;
     }
 
+    public ResponseEntity<?> getUserHistory() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        List<Order> orderHistory = orderRepository.findAllByUserId(user.getId());
+        return ResponseEntity.ok(orderHistory);
+    }
+
+    public ResponseEntity<?> getOrders() {
+        return ResponseEntity.ok(orderRepository.findAll());
+    }
 }

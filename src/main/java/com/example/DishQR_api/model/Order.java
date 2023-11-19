@@ -22,4 +22,5 @@ public class Order {
     private List<OrderItem> order;
     private PaymentMethod paymentMethod;
     private LocalDateTime date;
+    private StatusType status;
 }

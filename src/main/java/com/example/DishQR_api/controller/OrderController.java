@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -24,6 +25,12 @@ public class OrderController {
         return orderService.acceptOrder(order);
     }
 
+    @GetMapping(path = "/getOrders")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public ResponseEntity<?> getOrders(){
+        return orderService.getOrders();
+    }
+
     @PostMapping(path = "/addToOrder")
     public ResponseEntity<?> addToOrder(@RequestBody(required=false) Order order, @RequestParam String dishId){
 
@@ -35,6 +42,12 @@ public class OrderController {
         return orderService.removeFromOrder(order, dishId);
     }
 
+    @GetMapping(path = "/getUserHistory")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public ResponseEntity<?> getUserHistory(){
+        return orderService.getUserHistory();
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, String>> handleException(HttpMessageNotReadableException ex) {
@@ -42,4 +55,5 @@ public class OrderController {
         errorDetails.put("message", ex.getLocalizedMessage());
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
+
 }
