@@ -1,4 +1,4 @@
-package com.example.DishQR_api.model;
+package com.example.DishQR_api.dto;
 
 import lombok.*;
 
@@ -7,8 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class OrderItem {
-    private Dish dish;
+public class OrderItemDto {
+    private DishDto dish;
     private Integer quantity;
     private Double cost;
 }

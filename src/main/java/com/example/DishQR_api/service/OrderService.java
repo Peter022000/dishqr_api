@@ -19,85 +19,83 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class OrderService {
-
     private final OrderRepository orderRepository;
     private final DishRepository dishRepository;
 
     private final QrCodeRepository qrCodeRepository;
 
-    public ResponseEntity<?> addToOrder(Order order, String dishId) {
-
-        Optional<Dish> dish = dishRepository.findById(dishId);
-        if(dish.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dish do not exist");
-        }
+    public ResponseEntity<?> addToOrder(Order order, Dish newDish) {
 
         OrderItem newDishToList = OrderItem
                 .builder()
-                .dish(dish.get())
+                .dish(newDish)
                 .quantity(1)
                 .build();
 
         if(order.getOrder() == null){
             List<OrderItem> orderItem = List.of(newDishToList);
-            order.setOrder(orderItem);
+            order = order.toBuilder().order(orderItem).build();
         } else {
-            Optional<OrderItem> existingDish = order.getOrder().stream()
-                    .filter(r -> r.getDish().getId().equals(dishId))
-                    .findFirst();
-
-            if (existingDish.isPresent()) {
-                OrderItem dishToUpdate = existingDish.get();
-                dishToUpdate.setQuantity(dishToUpdate.getQuantity() + 1);
-            } else {
-                List<OrderItem> orderItem = order.getOrder();
-                orderItem.add(newDishToList);
-                order.setOrder(orderItem);
-            }
+            order = addDish(order,newDishToList);
         }
-        order.setCost(recalculateCost(order));
+        order = order.toBuilder().cost(recalculateCost(order)).build();
 
         return ResponseEntity.ok(order);
     }
 
-    public ResponseEntity<?> removeFromOrder(Order order, String dishId) {
-        Optional<Dish> dish = dishRepository.findById(dishId);
-        if(dish.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dish do not exist");
-        }
-
-        if(order.getOrder() == null){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is empty");
-        }
-
+    public Order addDish(Order order, OrderItem newDishToList){
         Optional<OrderItem> existingDish = order.getOrder().stream()
-                .filter(r -> r.getDish().getId().equals(dishId))
+                .filter(r -> r.getDish().getId().equals(newDishToList.getDish().getId()))
                 .findFirst();
 
         if (existingDish.isPresent()) {
-            OrderItem dishToRemove = existingDish.get();
-            if (existingDish.get().getQuantity() == 1) {
-                order.getOrder().remove(dishToRemove);
-            } else {
-                dishToRemove.setQuantity(dishToRemove.getQuantity() - 1);
-            }
+            OrderItem dishToUpdate = existingDish.get();
+
+            dishToUpdate = dishToUpdate.toBuilder().quantity(dishToUpdate.getQuantity()+1).build();
+
+            List<OrderItem> orderItems = order.getOrder();
+            orderItems.set(orderItems.indexOf(existingDish.get()), dishToUpdate);
+            order = order.toBuilder().order(orderItems).build();
+
+        } else {
+            List<OrderItem> orderItems = order.getOrder();
+            orderItems.add(newDishToList);
+            order.toBuilder().order(orderItems).build();
+        }
+        return order;
+    }
+
+    public ResponseEntity<?> removeFromOrder(Order order, Dish dish) {
+        Optional<OrderItem> existingDish = order.getOrder().stream()
+                .filter(r -> r.getDish().getId().equals(dish.getId()))
+                .findFirst();
+
+        if (existingDish.isPresent()) {
+            order = decrementQuantity(order, existingDish.get());
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order do not include dish");
         }
 
-        order.setCost(recalculateCost(order));
-        order.setStatus(StatusType.NEW);
+        return ResponseEntity.ok(order.toBuilder().cost(recalculateCost(order)).build());
+    }
 
-        return ResponseEntity.ok(order);
+    public Order decrementQuantity(Order order, OrderItem dishToRemove){
+        List<OrderItem> orderItems = order.getOrder();
+
+        if (dishToRemove.getQuantity() == 1) {
+            orderItems.remove(dishToRemove);
+        } else {
+            OrderItem dishToRemoveAfter = dishToRemove.toBuilder().quantity(dishToRemove.getQuantity()-1).build();
+            orderItems.set(orderItems.indexOf(dishToRemove), dishToRemoveAfter);
+        }
+        return order.toBuilder().order(orderItems).build();
     }
 
     public ResponseEntity<?> acceptOrder(Order order) {
         List<OrderItem> orderItems = order.getOrder();
 
-        for (OrderItem orderItem : orderItems) {
-            if (!isDishValid(orderItem)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One of the dishes is not valid");
-            }
+        if(validateDishesInOrder(orderItems)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One of the dishes is not valid");
         }
 
         if(!isTotalCostValid(order)){
@@ -123,13 +121,25 @@ public class OrderService {
 //            System.out.println(authentication.getName());
 //        }
 
-
-        order.setDate(LocalDateTime.now());
+        order = order.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
 
         return ResponseEntity.ok(orderRepository.save(order));
     }
 
-    private double recalculateCost(Order order) {
+    public boolean validateDishesInOrder(List<OrderItem> orderItems) {
+        for (OrderItem orderItem : orderItems) {
+            Optional<Dish> dbDish = dishRepository.findById(orderItem.getDish().getId());
+            if(dbDish.isEmpty()){
+                return false;
+            }
+            if (!isDishValid(orderItem, dbDish.get())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public double recalculateCost(Order order) {
         for (OrderItem orderItem : order.getOrder()) {
             orderItem.setCost(roundToTwoDecimalPlaces(orderItem.getDish().getPrice() * orderItem.getQuantity()));
         }
@@ -140,32 +150,41 @@ public class OrderService {
     }
 
 
-    private boolean isDishValid(OrderItem orderItem) {
-        Optional<Dish> optionalDish = dishRepository.findById(orderItem.getDish().getId());
-
-        if (optionalDish.isPresent()) {
-            Dish dbDish = optionalDish.get();
-
-            if (!dbDish.getDishType().equals(orderItem.getDish().getDishType()) ||
-                    !dbDish.getName().equals(orderItem.getDish().getName()) ||
-                    !dbDish.getPrice().equals(orderItem.getDish().getPrice()) ||
-                    !dbDish.getIngredients().equals(orderItem.getDish().getIngredients())) {
-                return false;
-            }
-
-            return orderItem.getCost().equals(dbDish.getPrice() * orderItem.getQuantity());
-        }
-
-        return false;
+    public boolean isDishValid(OrderItem orderItem, Dish dbDish) {
+        return isDishTypeValid(orderItem.getDish().getDishType().toString(), dbDish.getDishType().toString()) &&
+                isDishNameValid(orderItem.getDish().getName(),dbDish.getName()) &&
+                isDishPriceValid(orderItem.getDish().getPrice(), dbDish.getPrice()) &&
+                isDishIngredientsValid(orderItem.getDish().getIngredients(), dbDish.getIngredients()) &&
+                isDishCostValid(orderItem.getCost(), orderItem.getQuantity(), dbDish.getPrice());
     }
 
-    private boolean isTotalCostValid(Order order) {
+    public boolean isDishTypeValid(String orderItemType, String dbDishType){
+        return orderItemType.equals(dbDishType);
+    }
+
+    public boolean isDishNameValid(String orderItemName, String dbDishName){
+        return orderItemName.equals(dbDishName);
+    }
+
+    public boolean isDishPriceValid(Double orderItemPrice, Double dbDishPrice){
+        return orderItemPrice.equals(dbDishPrice);
+    }
+
+    public boolean isDishIngredientsValid(List<String> orderItemIngredients, List<String> dbDishIngredients){
+        return orderItemIngredients.equals(dbDishIngredients);
+    }
+
+    public boolean isDishCostValid(Double orderItemCost, Integer orderItemQuantity, Double dbDishPrice){
+        return orderItemCost.equals(orderItemQuantity * dbDishPrice);
+    }
+
+    public boolean isTotalCostValid(Order order) {
         Double dbCost = 0.0;
         for (OrderItem orderItem : order.getOrder()) {
-            Optional<Dish> optionalDish = dishRepository.findById(orderItem.getDish().getId());
+            Optional<Dish> optionalDbDish = dishRepository.findById(orderItem.getDish().getId());
 
-            if (optionalDish.isPresent()) {
-                Dish dbDish = optionalDish.get();
+            if (optionalDbDish.isPresent()) {
+                Dish dbDish = optionalDbDish.get();
                 dbCost += dbDish.getPrice()*orderItem.getQuantity();
             }
         }
@@ -179,15 +198,15 @@ public class OrderService {
         return dbCost.equals(calculatedTotalCost);
     }
 
-    private boolean isPaymentMethodValid(PaymentMethod paymentMethod){
+    public boolean isPaymentMethodValid(PaymentMethod paymentMethod){
         return paymentMethod != null;
     }
 
-    private boolean isTableNoValid(String tableNoId){
+    public boolean isTableNoValid(String tableNoId){
         return tableNoId != null && qrCodeRepository.findById(tableNoId).isPresent();
     }
 
-    private double roundToTwoDecimalPlaces(double value) {
+    public double roundToTwoDecimalPlaces(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
 
