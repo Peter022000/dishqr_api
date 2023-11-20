@@ -1,5 +1,9 @@
 package com.example.DishQR_api.controller;
 
+import com.example.DishQR_api.dto.DishDto;
+import com.example.DishQR_api.dto.OrderDto;
+import com.example.DishQR_api.dto.OrderItemDto;
+import com.example.DishQR_api.mapper.DishMapper;
 import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.model.OrderItem;
@@ -24,11 +28,12 @@ public class OrderController {
 
     private final OrderService orderService;
     private final DishRepository dishRepository;
+    private final DishMapper dishMapper;
 
     @PostMapping(path = "/acceptOrder")
-    public ResponseEntity<?> acceptOrder(@RequestBody(required=false) Order order){
+    public ResponseEntity<?> acceptOrder(@RequestBody(required=false) OrderDto orderDto){
 
-        return orderService.acceptOrder(order);
+        return orderService.acceptOrder(orderDto);
     }
 
     @GetMapping(path = "/getOrders")
@@ -37,34 +42,33 @@ public class OrderController {
     }
 
     @PostMapping(path = "/addToOrder")
-    public ResponseEntity<?> addToOrder(@RequestBody(required=false) Order order, @RequestParam String dishId){
+    public ResponseEntity<?> addToOrder(@RequestBody(required=false) OrderDto orderDto, @RequestParam String dishId){
 
         Optional<Dish> dish = dishRepository.findById(dishId);
         if(dish.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dish do not exist");
         }
 
-        return orderService.addToOrder(order, dish.get());
+        DishDto dishDto = dishMapper.toDto(dish.get());
+
+        return orderService.addToOrder(orderDto, dishDto);
     }
 
     @PostMapping(path = "/removeFromOrder")
-    public ResponseEntity<?> removeFromOrder(@RequestBody(required=false) Order order, @RequestParam String dishId){
+    public ResponseEntity<?> removeFromOrder(@RequestBody(required=false) OrderDto orderDto, @RequestParam String dishId){
 
         Optional<Dish> dish = dishRepository.findById(dishId);
         if(dish.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dish do not exist");
         }
 
-        if(order.getOrder() == null){
+        if(orderDto.getOrder() == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is empty");
         }
 
-        Optional<OrderItem> existingDish = order.getOrder().stream()
-                .filter(r -> r.getDish().getId().equals(dishId))
-                .findFirst();
+        DishDto dishDto = dishMapper.toDto(dish.get());
 
-
-        return orderService.removeFromOrder(order, dish.get());
+        return orderService.removeFromOrder(orderDto, dishDto);
     }
 
     @GetMapping(path = "/getUserHistory")

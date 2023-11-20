@@ -2,13 +2,17 @@ package com.example.DishQR_api.mapper;
 
 import com.example.DishQR_api.dto.DishDto;
 import com.example.DishQR_api.model.Dish;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
+@AllArgsConstructor
 public class DishMapper {
 
-    public static DishDto toDto(Dish dish) {
+    public DishDto toDto(Dish dish) {
         return DishDto.builder()
                 .id(dish.getId())
                 .dishType(dish.getDishType())
@@ -18,7 +22,7 @@ public class DishMapper {
                 .build();
     }
 
-    public static Dish toEntity(DishDto dishDto) {
+    public Dish toEntity(DishDto dishDto) {
         return Dish.builder()
                 .id(dishDto.getId())
                 .dishType(dishDto.getDishType())
@@ -28,15 +32,15 @@ public class DishMapper {
                 .build();
     }
 
-    public static List<DishDto> toDtoList(List<Dish> dishes) {
+    public List<DishDto> toDtoList(List<Dish> dishes) {
         return dishes.stream()
-                .map(DishMapper::toDto)
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public static List<Dish> toEntityList(List<DishDto> dishDtos) {
+    public List<Dish> toEntityList(List<DishDto> dishDtos) {
         return dishDtos.stream()
-                .map(DishMapper::toEntity)
+                .map(this::toEntity)
                 .collect(Collectors.toList());
     }
 }

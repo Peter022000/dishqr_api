@@ -1,6 +1,11 @@
 package com.example.DishQR_api.service;
 
 
+import com.example.DishQR_api.dto.DishDto;
+import com.example.DishQR_api.dto.OrderDto;
+import com.example.DishQR_api.dto.OrderItemDto;
+import com.example.DishQR_api.mapper.DishMapper;
+import com.example.DishQR_api.mapper.OrderMapper;
 import com.example.DishQR_api.model.*;
 import com.example.DishQR_api.repository.DishRepository;
 import com.example.DishQR_api.repository.OrderRepository;
@@ -21,168 +26,178 @@ import java.util.Optional;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final DishRepository dishRepository;
-
     private final QrCodeRepository qrCodeRepository;
+    private final OrderMapper orderMapper;
 
-    public ResponseEntity<?> addToOrder(Order order, Dish newDish) {
+    public ResponseEntity<?> addToOrder(OrderDto orderDto, DishDto newDishDto) {
 
-        OrderItem newDishToList = OrderItem
+        OrderItemDto newDishToList = OrderItemDto
                 .builder()
-                .dish(newDish)
+                .dish(newDishDto)
                 .quantity(1)
                 .build();
 
-        if(order.getOrder() == null){
-            List<OrderItem> orderItem = List.of(newDishToList);
-            order = order.toBuilder().order(orderItem).build();
+        if(orderDto.getOrder() == null){
+            List<OrderItemDto> orderItem = List.of(newDishToList);
+            orderDto = orderDto.toBuilder().order(orderItem).build();
         } else {
-            order = addDish(order,newDishToList);
+            orderDto = addDish(orderDto,newDishToList);
         }
-        order = order.toBuilder().cost(recalculateCost(order)).build();
+        orderDto = orderDto.toBuilder().cost(recalculateCost(orderDto)).build();
 
-        return ResponseEntity.ok(order);
+        return ResponseEntity.ok(orderDto);
     }
 
-    public Order addDish(Order order, OrderItem newDishToList){
-        Optional<OrderItem> existingDish = order.getOrder().stream()
-                .filter(r -> r.getDish().getId().equals(newDishToList.getDish().getId()))
+    public OrderDto addDish(OrderDto orderDto, OrderItemDto newDishToListDto){
+        Optional<OrderItemDto> existingDish = orderDto.getOrder().stream()
+                .filter(r -> r.getDish().getId().equals(newDishToListDto.getDish().getId()))
                 .findFirst();
 
         if (existingDish.isPresent()) {
-            OrderItem dishToUpdate = existingDish.get();
+            OrderItemDto dishToUpdate = existingDish.get();
 
             dishToUpdate = dishToUpdate.toBuilder().quantity(dishToUpdate.getQuantity()+1).build();
 
-            List<OrderItem> orderItems = order.getOrder();
+            List<OrderItemDto> orderItems = orderDto.getOrder();
             orderItems.set(orderItems.indexOf(existingDish.get()), dishToUpdate);
-            order = order.toBuilder().order(orderItems).build();
+            orderDto = orderDto.toBuilder().order(orderItems).build();
 
         } else {
-            List<OrderItem> orderItems = order.getOrder();
-            orderItems.add(newDishToList);
-            order.toBuilder().order(orderItems).build();
+            List<OrderItemDto> orderItems = orderDto.getOrder();
+            orderItems.add(newDishToListDto);
+            orderDto.toBuilder().order(orderItems).build();
         }
-        return order;
+        return orderDto;
     }
 
-    public ResponseEntity<?> removeFromOrder(Order order, Dish dish) {
-        Optional<OrderItem> existingDish = order.getOrder().stream()
-                .filter(r -> r.getDish().getId().equals(dish.getId()))
+    public ResponseEntity<?> removeFromOrder(OrderDto orderDto, DishDto dishDto) {
+        Optional<OrderItemDto> existingDish = orderDto.getOrder().stream()
+                .filter(r -> r.getDish().getId().equals(dishDto.getId()))
                 .findFirst();
 
         if (existingDish.isPresent()) {
-            order = decrementQuantity(order, existingDish.get());
+            orderDto = decrementQuantity(orderDto, existingDish.get());
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order do not include dish");
         }
 
-        return ResponseEntity.ok(order.toBuilder().cost(recalculateCost(order)).build());
+        return ResponseEntity.ok(orderDto.toBuilder().cost(recalculateCost(orderDto)).build());
     }
 
-    public Order decrementQuantity(Order order, OrderItem dishToRemove){
-        List<OrderItem> orderItems = order.getOrder();
+    public OrderDto decrementQuantity(OrderDto orderDto, OrderItemDto dishToRemoveDto){
+        List<OrderItemDto> orderItemsDto = orderDto.getOrder();
 
-        if (dishToRemove.getQuantity() == 1) {
-            orderItems.remove(dishToRemove);
+        if (dishToRemoveDto.getQuantity() == 1) {
+            orderItemsDto.remove(dishToRemoveDto);
         } else {
-            OrderItem dishToRemoveAfter = dishToRemove.toBuilder().quantity(dishToRemove.getQuantity()-1).build();
-            orderItems.set(orderItems.indexOf(dishToRemove), dishToRemoveAfter);
+            OrderItemDto dishToRemoveDtoAfter = dishToRemoveDto.toBuilder().quantity(dishToRemoveDto.getQuantity()-1).build();
+            orderItemsDto.set(orderItemsDto.indexOf(dishToRemoveDto), dishToRemoveDtoAfter);
         }
-        return order.toBuilder().order(orderItems).build();
+        return orderDto.toBuilder().order(orderItemsDto).build();
     }
 
-    public ResponseEntity<?> acceptOrder(Order order) {
-        List<OrderItem> orderItems = order.getOrder();
+    public ResponseEntity<?> acceptOrder(OrderDto orderDto) {
+        List<OrderItemDto> orderItems = orderDto.getOrder();
 
-        if(validateDishesInOrder(orderItems)){
+        if(!validateDishesInOrder(orderItems)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One of the dishes is not valid");
         }
 
-        if(!isTotalCostValid(order)){
+        if(!isTotalCostValid(orderDto)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Total cost is not valid");
         }
 
-        if(!isPaymentMethodValid(order.getPaymentMethod())){
+        if(!isPaymentMethodValid(orderDto.getPaymentMethod())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment method is not valid");
         }
 
-        if(!isTableNoValid(order.getTableNoId())){
+        if(!isTableNoValid(orderDto.getTableNoId())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Table number is not valid");
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+
+//        if (authentication instanceof AnonymousAuthenticationToken){
+//            System.out.println(authentication.getName());
+//        }
+
+        orderDto = orderDto.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
+
+        Order order = orderMapper.toEntity(orderDto);
 
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()))) {
             User user = (User) authentication.getPrincipal();
             order.setUserId(user.getId());
         }
 
-//        if (authentication instanceof AnonymousAuthenticationToken){
-//            System.out.println(authentication.getName());
-//        }
-
-        order = order.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
-
         return ResponseEntity.ok(orderRepository.save(order));
     }
 
-    public boolean validateDishesInOrder(List<OrderItem> orderItems) {
-        for (OrderItem orderItem : orderItems) {
-            Optional<Dish> dbDish = dishRepository.findById(orderItem.getDish().getId());
+    public boolean validateDishesInOrder(List<OrderItemDto> orderItemsDto) {
+        for (OrderItemDto orderItemDto : orderItemsDto) {
+            System.out.println(orderItemDto);
+            Optional<Dish> dbDish = dishRepository.findById(orderItemDto.getDish().getId());
             if(dbDish.isEmpty()){
                 return false;
             }
-            if (!isDishValid(orderItem, dbDish.get())) {
+            if (!isDishValid(orderItemDto, dbDish.get())) {
                 return false;
             }
         }
+        System.out.println("yes");
         return true;
     }
 
-    public double recalculateCost(Order order) {
-        for (OrderItem orderItem : order.getOrder()) {
-            orderItem.setCost(roundToTwoDecimalPlaces(orderItem.getDish().getPrice() * orderItem.getQuantity()));
+    public double recalculateCost(OrderDto orderDto) {
+        for (OrderItemDto orderItemDto : orderDto.getOrder()) {
+            orderItemDto.setCost(roundToTwoDecimalPlaces(orderItemDto.getDish().getPrice() * orderItemDto.getQuantity()));
         }
 
-        return roundToTwoDecimalPlaces(order.getOrder().stream()
-                .mapToDouble(OrderItem::getCost)
+        return roundToTwoDecimalPlaces(orderDto.getOrder().stream()
+                .mapToDouble(OrderItemDto::getCost)
                 .sum());
     }
 
-
-    public boolean isDishValid(OrderItem orderItem, Dish dbDish) {
-        return isDishTypeValid(orderItem.getDish().getDishType().toString(), dbDish.getDishType().toString()) &&
-                isDishNameValid(orderItem.getDish().getName(),dbDish.getName()) &&
-                isDishPriceValid(orderItem.getDish().getPrice(), dbDish.getPrice()) &&
-                isDishIngredientsValid(orderItem.getDish().getIngredients(), dbDish.getIngredients()) &&
-                isDishCostValid(orderItem.getCost(), orderItem.getQuantity(), dbDish.getPrice());
+    public boolean isDishValid(OrderItemDto orderItemDto, Dish dbDish) {
+        System.out.println("start validate");
+        return isDishTypeValid(orderItemDto.getDish().getDishType().toString(), dbDish.getDishType().toString()) &&
+                isDishNameValid(orderItemDto.getDish().getName(),dbDish.getName()) &&
+                isDishPriceValid(orderItemDto.getDish().getPrice(), dbDish.getPrice()) &&
+                isDishIngredientsValid(orderItemDto.getDish().getIngredients(), dbDish.getIngredients()) &&
+                isDishCostValid(orderItemDto.getCost(), orderItemDto.getQuantity(), dbDish.getPrice());
     }
 
     public boolean isDishTypeValid(String orderItemType, String dbDishType){
+        System.out.println("1");
         return orderItemType.equals(dbDishType);
     }
 
     public boolean isDishNameValid(String orderItemName, String dbDishName){
+        System.out.println("2");
         return orderItemName.equals(dbDishName);
     }
 
     public boolean isDishPriceValid(Double orderItemPrice, Double dbDishPrice){
+        System.out.println("3");
         return orderItemPrice.equals(dbDishPrice);
     }
 
     public boolean isDishIngredientsValid(List<String> orderItemIngredients, List<String> dbDishIngredients){
+        System.out.println("4");
         return orderItemIngredients.equals(dbDishIngredients);
     }
 
     public boolean isDishCostValid(Double orderItemCost, Integer orderItemQuantity, Double dbDishPrice){
+        System.out.println("5");
         return orderItemCost.equals(orderItemQuantity * dbDishPrice);
     }
 
-    public boolean isTotalCostValid(Order order) {
+    public boolean isTotalCostValid(OrderDto orderDto) {
+        System.out.println("6");
         Double dbCost = 0.0;
-        for (OrderItem orderItem : order.getOrder()) {
+        for (OrderItemDto orderItem : orderDto.getOrder()) {
             Optional<Dish> optionalDbDish = dishRepository.findById(orderItem.getDish().getId());
-
             if (optionalDbDish.isPresent()) {
                 Dish dbDish = optionalDbDish.get();
                 dbCost += dbDish.getPrice()*orderItem.getQuantity();
@@ -191,8 +206,8 @@ public class OrderService {
 
         dbCost = roundToTwoDecimalPlaces(dbCost);
 
-        Double calculatedTotalCost = roundToTwoDecimalPlaces(order.getOrder().stream()
-                .mapToDouble(OrderItem::getCost)
+        Double calculatedTotalCost = roundToTwoDecimalPlaces(orderDto.getOrder().stream()
+                .mapToDouble(OrderItemDto::getCost)
                 .sum());
 
         return dbCost.equals(calculatedTotalCost);

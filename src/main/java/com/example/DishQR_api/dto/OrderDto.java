@@ -15,7 +15,6 @@ import java.util.List;
 @ToString
 @Document("orders")
 public class OrderDto {
-    private String userId;
     private String tableNoId;
     private Double cost;
     private List<OrderItemDto> order;
