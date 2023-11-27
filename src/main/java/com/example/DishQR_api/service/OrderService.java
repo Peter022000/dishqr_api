@@ -4,7 +4,6 @@ package com.example.DishQR_api.service;
 import com.example.DishQR_api.dto.DishDto;
 import com.example.DishQR_api.dto.OrderDto;
 import com.example.DishQR_api.dto.OrderItemDto;
-import com.example.DishQR_api.mapper.DishMapper;
 import com.example.DishQR_api.mapper.OrderMapper;
 import com.example.DishQR_api.model.*;
 import com.example.DishQR_api.repository.DishRepository;
@@ -122,9 +121,9 @@ public class OrderService {
 //            System.out.println(authentication.getName());
 //        }
 
-        orderDto = orderDto.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
-
         Order order = orderMapper.toEntity(orderDto);
+
+        order = order.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
 
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()))) {
             User user = (User) authentication.getPrincipal();
@@ -145,7 +144,6 @@ public class OrderService {
                 return false;
             }
         }
-        System.out.println("yes");
         return true;
     }
 
@@ -160,7 +158,6 @@ public class OrderService {
     }
 
     public boolean isDishValid(OrderItemDto orderItemDto, Dish dbDish) {
-        System.out.println("start validate");
         return isDishTypeValid(orderItemDto.getDish().getDishType().toString(), dbDish.getDishType().toString()) &&
                 isDishNameValid(orderItemDto.getDish().getName(),dbDish.getName()) &&
                 isDishPriceValid(orderItemDto.getDish().getPrice(), dbDish.getPrice()) &&
@@ -169,32 +166,26 @@ public class OrderService {
     }
 
     public boolean isDishTypeValid(String orderItemType, String dbDishType){
-        System.out.println("1");
         return orderItemType.equals(dbDishType);
     }
 
     public boolean isDishNameValid(String orderItemName, String dbDishName){
-        System.out.println("2");
         return orderItemName.equals(dbDishName);
     }
 
     public boolean isDishPriceValid(Double orderItemPrice, Double dbDishPrice){
-        System.out.println("3");
         return orderItemPrice.equals(dbDishPrice);
     }
 
     public boolean isDishIngredientsValid(List<String> orderItemIngredients, List<String> dbDishIngredients){
-        System.out.println("4");
         return orderItemIngredients.equals(dbDishIngredients);
     }
 
     public boolean isDishCostValid(Double orderItemCost, Integer orderItemQuantity, Double dbDishPrice){
-        System.out.println("5");
         return orderItemCost.equals(orderItemQuantity * dbDishPrice);
     }
 
     public boolean isTotalCostValid(OrderDto orderDto) {
-        System.out.println("6");
         Double dbCost = 0.0;
         for (OrderItemDto orderItem : orderDto.getOrder()) {
             Optional<Dish> optionalDbDish = dishRepository.findById(orderItem.getDish().getId());

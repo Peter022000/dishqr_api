@@ -20,8 +20,6 @@ public class OrderMapper {
                 .cost(order.getCost())
                 .order(orderItemMapper.toDtoList(order.getOrder()))
                 .paymentMethod(order.getPaymentMethod())
-                .date(order.getDate())
-                .status(order.getStatus())
                 .build();
     }
 
@@ -31,8 +29,6 @@ public class OrderMapper {
                 .cost(orderDto.getCost())
                 .order(orderItemMapper.toEntityList(orderDto.getOrder()))
                 .paymentMethod(orderDto.getPaymentMethod())
-                .date(orderDto.getDate())
-                .status(orderDto.getStatus())
                 .build();
     }
 

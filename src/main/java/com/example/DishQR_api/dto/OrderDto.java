@@ -19,6 +19,4 @@ public class OrderDto {
     private Double cost;
     private List<OrderItemDto> order;
     private PaymentMethod paymentMethod;
-    private LocalDateTime date;
-    private StatusType status;
 }
