@@ -2,15 +2,11 @@ package com.example.DishQR_api.controller;
 
 import com.example.DishQR_api.dto.DishDto;
 import com.example.DishQR_api.dto.OrderDto;
-import com.example.DishQR_api.dto.OrderItemDto;
 import com.example.DishQR_api.mapper.DishMapper;
 import com.example.DishQR_api.model.Dish;
-import com.example.DishQR_api.model.Order;
-import com.example.DishQR_api.model.OrderItem;
 import com.example.DishQR_api.repository.DishRepository;
 import com.example.DishQR_api.service.OrderService;
 import lombok.AllArgsConstructor;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
