@@ -61,8 +61,6 @@ public class AuthenticationService {
 
         User user = User
                 .builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.ROLE_USER)
@@ -109,8 +107,6 @@ public class AuthenticationService {
             User userChangePassword = User
                     .builder()
                     .id(user.get().getId())
-                    .firstName(user.get().getFirstName())
-                    .lastName(user.get().getLastName())
                     .email(user.get().getEmail())
                     .password(passwordEncoder.encode(changePasswordRequest.getNewPassword()))
                     .role(user.get().getRole())

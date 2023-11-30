@@ -127,7 +127,7 @@ public class OrderService {
 
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()))) {
             User user = (User) authentication.getPrincipal();
-            order.setUserId(user.getId());
+            order = order.toBuilder().userId(user.getId()).build();
         }
 
         return ResponseEntity.ok(orderRepository.save(order));
@@ -135,7 +135,6 @@ public class OrderService {
 
     public boolean validateDishesInOrder(List<OrderItemDto> orderItemsDto) {
         for (OrderItemDto orderItemDto : orderItemsDto) {
-            System.out.println(orderItemDto);
             Optional<Dish> dbDish = dishRepository.findById(orderItemDto.getDish().getId());
             if(dbDish.isEmpty()){
                 return false;
