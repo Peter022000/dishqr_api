@@ -3,6 +3,8 @@ package com.example.DishQR_api.config;
 import com.example.DishQR_api.Filters.JwtAuthenticationFilter;
 import com.example.DishQR_api.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +17,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -27,6 +30,10 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    @Qualifier("delegatedAuthenticationEntryPoint")
+    AuthenticationEntryPoint authEntryPoint;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -54,11 +61,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/users/signup", "/users/signin").permitAll()
                         .requestMatchers(HttpMethod.GET, "/dishes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/order/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/order/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/qrCode/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .authenticationProvider(authenticationProvider()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling()
+                .authenticationEntryPoint(authEntryPoint);
         return http.build();
     }
 }
+

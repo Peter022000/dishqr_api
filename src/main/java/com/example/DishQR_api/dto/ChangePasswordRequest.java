@@ -1,4 +1,5 @@
 package com.example.DishQR_api.dto;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignUpRequest {
-    String email;
-    String password;
-    String repeatPassword;
+public class ChangePasswordRequest {
+    String oldPassword;
+    String newPassword;
+    String repeatNewPassword;
 }
