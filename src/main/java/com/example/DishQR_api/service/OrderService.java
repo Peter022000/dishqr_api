@@ -97,6 +97,7 @@ public class OrderService {
 
     public ResponseEntity<?> acceptOrder(OrderDto orderDto, String userId) {
 
+        orderDto = recalculateCost(orderDto);
 
         List<OrderItemDto> orderItems = orderDto.getOrderDishesDto();
 
@@ -120,8 +121,8 @@ public class OrderService {
 //            System.out.println(authentication.getName());
 //        }
 
-        Order order = orderMapper.toEntity(orderDto);
 
+        Order order = orderMapper.toEntity(orderDto);
 
         order = order.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
 
