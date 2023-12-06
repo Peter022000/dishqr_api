@@ -18,39 +18,40 @@ public class OrderDiscountService {
 
     OrderService orderService;
 
-    public OrderDto checkOrderDiscount(Boolean isLoggedIn, DiscountSettingsDto discountSettingsDto, OrderDto orderDto) {
+    public OrderDiscountDto checkOrderDiscount(Boolean isLoggedIn, DiscountSettingsDto discountSettingsDto) {
         if(isLoggedIn) {
-            return orderDto.toBuilder()
-                    .orderDiscountDto(setOrderDiscount(orderDto.getOrderDiscountDto(), orderService.getNumberOfOrders(), discountSettingsDto, true))
-                    .build();
+            return setOrderDiscount(orderService.getNumberOfOrders(), discountSettingsDto, true);
         } else {
-            return orderDto.toBuilder()
-                    .orderDiscountDto(setOrderDiscount(orderDto.getOrderDiscountDto(), -1, discountSettingsDto, false))
-                    .build();
+            return setOrderDiscount( -1, discountSettingsDto, false);
         }
     }
 
-    public OrderDiscountDto setOrderDiscount(OrderDiscountDto orderDiscountDto, Integer numberOfOrders, DiscountSettingsDto discountSettingsDto, Boolean isLoggedIn) {
+    public OrderDiscountDto setOrderDiscount(Integer numberOfOrders, DiscountSettingsDto discountSettingsDto, Boolean isLoggedIn) {
+
+        OrderDiscountDto orderDiscountDto;
 
         if (isLoggedIn) {
             orderDiscountDto = OrderDiscountDto.builder()
-                    .isLoggedIn(true).build();
+                    .isLoggedIn(true)
+                    .discountPercentage(discountSettingsDto.getDiscountPercentage())
+                    .isEnabled(discountSettingsDto.getIsEnabled())
+                    .ordersCount(numberOfOrders)
+                    .ordersRequired(discountSettingsDto.getOrdersRequired())
+                    .build();
         } else {
             orderDiscountDto = OrderDiscountDto.builder()
-                    .isLoggedIn(false).build();
+                    .isLoggedIn(false)
+                    .discountPercentage(discountSettingsDto.getDiscountPercentage())
+                    .isEnabled(discountSettingsDto.getIsEnabled())
+                    .ordersCount(numberOfOrders)
+                    .ordersRequired(discountSettingsDto.getOrdersRequired())
+                    .build();
         }
-
-        orderDiscountDto = orderDiscountDto.toBuilder()
-                .discountPercentage(discountSettingsDto.getDiscountPercentage())
-                .isEnabled(discountSettingsDto.getIsEnabled())
-                .ordersCount(numberOfOrders)
-                .ordersRequired(discountSettingsDto.getOrdersRequired())
-                .build();
-
+        
         if(orderDiscountDto.getIsLoggedIn()
                 && orderDiscountDto.getOrdersCount() > 0
                 && orderDiscountDto.getIsEnabled()
-                && orderDiscountDto.getOrdersRequired() % orderDiscountDto.getOrdersCount() == 0) {
+                && orderDiscountDto.getOrdersCount() % orderDiscountDto.getOrdersRequired() == 0) {
             orderDiscountDto = orderDiscountDto.toBuilder()
                     .isUsed(true)
                     .build();

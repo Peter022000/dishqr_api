@@ -52,7 +52,9 @@ public class OrderController {
 
         Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
 
-        orderDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto, orderDto);
+        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto);
+
+        orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
         return orderService.acceptOrder(orderDto, userId);
     }
@@ -78,7 +80,9 @@ public class OrderController {
 
         DiscountSettingsDto discountSettingsDto = discountSettingsMapper.toDto(orderService.getDiscountSettings());
 
-        orderDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto, orderDto);
+        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto);
+
+        orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
         return orderService.addToOrder(orderDto, dishDto);
     }
@@ -91,7 +95,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dish do not exist");
         }
 
-        if(orderDto.getOrderDto() == null){
+        if(orderDto.getOrderDishesDto() == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is empty");
         }
 
@@ -99,11 +103,15 @@ public class OrderController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
-
         DiscountSettingsDto discountSettingsDto = discountSettingsMapper.toDto(orderService.getDiscountSettings());
 
-        return orderService.removeFromOrder(orderDto, dishDto, isLoggedIn, discountSettingsDto);
+        Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
+
+        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto);
+
+        orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
+
+        return orderService.removeFromOrder(orderDto, dishDto);
     }
 
     @GetMapping(path = "/getUserNumberOfOrders")

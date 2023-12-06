@@ -17,7 +17,7 @@ import java.util.List;
 public class OrderDto {
     private String tableNoId;
     private Double cost;
-    private List<OrderItemDto> orderDto;
+    private List<OrderItemDto> orderDishesDto;
     private PaymentMethod paymentMethod;
     private OrderDiscountDto orderDiscountDto;
 }

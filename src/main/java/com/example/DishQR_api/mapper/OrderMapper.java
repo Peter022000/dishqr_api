@@ -20,7 +20,7 @@ public class OrderMapper {
         return OrderDto.builder()
                 .tableNoId(order.getTableNoId())
                 .cost(order.getCost())
-                .orderDto(orderItemMapper.toDtoList(order.getOrder()))
+                .orderDishesDto(orderItemMapper.toDtoList(order.getOrder()))
                 .paymentMethod(order.getPaymentMethod())
                 .orderDiscountDto(orderDiscountMapper.toDto(order.getOrderDiscount()))
                 .build();
@@ -30,7 +30,7 @@ public class OrderMapper {
         return Order.builder()
                 .tableNoId(orderDto.getTableNoId())
                 .cost(orderDto.getCost())
-                .order(orderItemMapper.toEntityList(orderDto.getOrderDto()))
+                .order(orderItemMapper.toEntityList(orderDto.getOrderDishesDto()))
                 .paymentMethod(orderDto.getPaymentMethod())
                 .orderDiscount(orderDiscountMapper.toEntity(orderDto.getOrderDiscountDto()))
                 .build();

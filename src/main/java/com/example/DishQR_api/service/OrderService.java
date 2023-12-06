@@ -27,7 +27,6 @@ public class OrderService {
     private final QrCodeRepository qrCodeRepository;
     private final DiscountSettingsRepository discountSettingsRepository;
     private final OrderMapper orderMapper;
-    private final OrderDiscountService orderDiscountService;
 
     public ResponseEntity<?> addToOrder(OrderDto orderDto, DishDto newDishDto) {
 
@@ -37,32 +36,19 @@ public class OrderService {
                 .quantity(1)
                 .build();
 
-        if(orderDto.getOrderDto() == null){
+
+        if(orderDto.getOrderDishesDto() == null){
             List<OrderItemDto> orderItem = List.of(newDishToList);
-            orderDto = orderDto.toBuilder().orderDto(orderItem).build();
+            orderDto = orderDto.toBuilder().orderDishesDto(orderItem).build();
         } else {
             orderDto = addDish(orderDto,newDishToList);
         }
 
-        orderDto = orderDto.toBuilder()
-                .orderDiscountDto(orderDto.getOrderDiscountDto()
-                        .toBuilder()
-                        .oldCost(recalculateCost(orderDto))
-                        .build())
-                .cost(recalculateCost(orderDto))
-                .build();
-
-        if(orderDto.getOrderDiscountDto().getIsLoggedIn() && orderDto.getOrderDiscountDto().getIsEnabled()){
-            orderDto = orderDto.toBuilder()
-                    .cost(checkDiscount(orderDto))
-                    .build();
-        }
-
-        return ResponseEntity.ok(orderDto);
+        return ResponseEntity.ok(recalculateCost(orderDto));
     }
 
     public OrderDto addDish(OrderDto orderDto, OrderItemDto newDishToListDto){
-        Optional<OrderItemDto> existingDish = orderDto.getOrderDto().stream()
+        Optional<OrderItemDto> existingDish = orderDto.getOrderDishesDto().stream()
                 .filter(r -> r.getDishDto().getId().equals(newDishToListDto.getDishDto().getId()))
                 .findFirst();
 
@@ -71,20 +57,20 @@ public class OrderService {
 
             dishToUpdate = dishToUpdate.toBuilder().quantity(dishToUpdate.getQuantity()+1).build();
 
-            List<OrderItemDto> orderItems = orderDto.getOrderDto();
+            List<OrderItemDto> orderItems = orderDto.getOrderDishesDto();
             orderItems.set(orderItems.indexOf(existingDish.get()), dishToUpdate);
-            orderDto = orderDto.toBuilder().orderDto(orderItems).build();
+            orderDto = orderDto.toBuilder().orderDishesDto(orderItems).build();
 
         } else {
-            List<OrderItemDto> orderItems = orderDto.getOrderDto();
+            List<OrderItemDto> orderItems = orderDto.getOrderDishesDto();
             orderItems.add(newDishToListDto);
-            orderDto.toBuilder().orderDto(orderItems).build();
+            orderDto.toBuilder().orderDishesDto(orderItems).build();
         }
         return orderDto;
     }
 
-    public ResponseEntity<?> removeFromOrder(OrderDto orderDto, DishDto dishDto, Boolean isLoggedIn, DiscountSettingsDto discountSettingsDto) {
-        Optional<OrderItemDto> existingDish = orderDto.getOrderDto().stream()
+    public ResponseEntity<?> removeFromOrder(OrderDto orderDto, DishDto dishDto) {
+        Optional<OrderItemDto> existingDish = orderDto.getOrderDishesDto().stream()
                 .filter(r -> r.getDishDto().getId().equals(dishDto.getId()))
                 .findFirst();
 
@@ -94,13 +80,11 @@ public class OrderService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order do not include dish");
         }
 
-        orderDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto, orderDto);
-
-        return ResponseEntity.ok(orderDto.toBuilder().cost(recalculateCost(orderDto)).build());
+        return ResponseEntity.ok(recalculateCost(orderDto));
     }
 
     public OrderDto decrementQuantity(OrderDto orderDto, OrderItemDto dishToRemoveDto){
-        List<OrderItemDto> orderItemsDto = orderDto.getOrderDto();
+        List<OrderItemDto> orderItemsDto = orderDto.getOrderDishesDto();
 
         if (dishToRemoveDto.getQuantity() == 1) {
             orderItemsDto.remove(dishToRemoveDto);
@@ -108,13 +92,13 @@ public class OrderService {
             OrderItemDto dishToRemoveDtoAfter = dishToRemoveDto.toBuilder().quantity(dishToRemoveDto.getQuantity()-1).build();
             orderItemsDto.set(orderItemsDto.indexOf(dishToRemoveDto), dishToRemoveDtoAfter);
         }
-        return orderDto.toBuilder().orderDto(orderItemsDto).build();
+        return orderDto.toBuilder().orderDishesDto(orderItemsDto).build();
     }
 
     public ResponseEntity<?> acceptOrder(OrderDto orderDto, String userId) {
 
 
-        List<OrderItemDto> orderItems = orderDto.getOrderDto();
+        List<OrderItemDto> orderItems = orderDto.getOrderDishesDto();
 
         if(!validateDishesInOrder(orderItems)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One of the dishes is not valid");
@@ -138,7 +122,9 @@ public class OrderService {
 
         Order order = orderMapper.toEntity(orderDto);
 
+
         order = order.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
+
 
         if (userId != null) {
             order = order.toBuilder().userId(userId).build();
@@ -160,16 +146,24 @@ public class OrderService {
         return true;
     }
 
-    public Double recalculateCost(OrderDto orderDto) {
-        for (OrderItemDto orderItemDto : orderDto.getOrderDto()) {
+    public OrderDto recalculateCost(OrderDto orderDto) {
+        for (OrderItemDto orderItemDto : orderDto.getOrderDishesDto()) {
             orderItemDto.setCost(orderItemDto.getDishDto().getPrice() * orderItemDto.getQuantity());
         }
 
-        double cost = roundToTwoDecimalPlaces(orderDto.getOrderDto().stream()
+        double cost = roundToTwoDecimalPlaces(orderDto.getOrderDishesDto().stream()
                 .mapToDouble(OrderItemDto::getCost)
                 .sum());
 
-        return roundToTwoDecimalPlaces(cost);
+        orderDto = orderDto.toBuilder()
+                .orderDiscountDto(orderDto.getOrderDiscountDto()
+                        .toBuilder()
+                        .oldCost(cost)
+                        .build())
+                .cost(checkDiscount(orderDto.getOrderDiscountDto().getIsUsed(),orderDto.getOrderDiscountDto().getDiscountPercentage(), cost))
+                .build();
+
+        return orderDto;
     }
 
     public boolean isDishValid(OrderItemDto orderItemDto, Dish dbDish) {
@@ -202,7 +196,7 @@ public class OrderService {
 
     public boolean isTotalCostValid(OrderDto orderDto) {
         Double dbCost = 0.0;
-        for (OrderItemDto orderItem : orderDto.getOrderDto()) {
+        for (OrderItemDto orderItem : orderDto.getOrderDishesDto()) {
             Optional<Dish> optionalDbDish = dishRepository.findById(orderItem.getDishDto().getId());
             if (optionalDbDish.isPresent()) {
                 Dish dbDish = optionalDbDish.get();
@@ -210,17 +204,22 @@ public class OrderService {
             }
         }
 
-        if(orderDto.getOrderDiscountDto().getIsLoggedIn()
-                && orderDto.getOrderDiscountDto().getIsEnabled()
-                && orderDto.getOrderDiscountDto().getOrdersRequired() % orderDto.getOrderDiscountDto().getOrdersCount() == 0) {
+        if(orderDto.getOrderDiscountDto().getIsUsed()) {
                 dbCost = dbCost * orderDto.getOrderDiscountDto().getDiscountPercentage();
         }
 
         dbCost = roundToTwoDecimalPlaces(dbCost);
 
-        Double calculatedTotalCost = roundToTwoDecimalPlaces(orderDto.getOrderDto().stream()
+        Double calculatedTotalCost = roundToTwoDecimalPlaces(orderDto.getOrderDishesDto().stream()
                 .mapToDouble(OrderItemDto::getCost)
                 .sum());
+
+        if(orderDto.getOrderDiscountDto().getIsUsed()) {
+            calculatedTotalCost = calculatedTotalCost * orderDto.getOrderDiscountDto().getDiscountPercentage();
+        }
+
+        calculatedTotalCost = roundToTwoDecimalPlaces(calculatedTotalCost);
+
 
         return dbCost.equals(calculatedTotalCost);
     }
@@ -259,15 +258,13 @@ public class OrderService {
         return getHistory().size();
     }
 
-    public Double checkDiscount(OrderDto orderDto){
+    public Double checkDiscount(Boolean isUsed, Double discountPercentage, Double cost){
 
-        Double cost = orderDto.getCost();
-
-        if(orderDto.getOrderDiscountDto().getIsUsed()){
-            cost = cost * orderDto.getOrderDiscountDto().getDiscountPercentage();
+        if(isUsed){
+            cost = cost * discountPercentage;
         }
 
-        return cost;
+        return roundToTwoDecimalPlaces(cost);
     }
 
     public DiscountSettings getDiscountSettings(){
