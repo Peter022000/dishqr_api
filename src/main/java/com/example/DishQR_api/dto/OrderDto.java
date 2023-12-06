@@ -1,5 +1,6 @@
 package com.example.DishQR_api.dto;
 
+import com.example.DishQR_api.model.OrderDiscount;
 import com.example.DishQR_api.model.PaymentMethod;
 import com.example.DishQR_api.model.StatusType;
 import lombok.*;
@@ -13,10 +14,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Document("orders")
 public class OrderDto {
     private String tableNoId;
     private Double cost;
-    private List<OrderItemDto> order;
+    private List<OrderItemDto> orderDto;
     private PaymentMethod paymentMethod;
+    private OrderDiscountDto orderDiscountDto;
 }

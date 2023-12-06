@@ -1,11 +1,10 @@
 package com.example.DishQR_api.service;
 
 
-import com.example.DishQR_api.dto.DishDto;
-import com.example.DishQR_api.dto.OrderDto;
-import com.example.DishQR_api.dto.OrderItemDto;
+import com.example.DishQR_api.dto.*;
 import com.example.DishQR_api.mapper.OrderMapper;
 import com.example.DishQR_api.model.*;
+import com.example.DishQR_api.repository.DiscountSettingsRepository;
 import com.example.DishQR_api.repository.DishRepository;
 import com.example.DishQR_api.repository.OrderRepository;
 import com.example.DishQR_api.repository.QrCodeRepository;
@@ -26,30 +25,45 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final DishRepository dishRepository;
     private final QrCodeRepository qrCodeRepository;
+    private final DiscountSettingsRepository discountSettingsRepository;
     private final OrderMapper orderMapper;
+    private final OrderDiscountService orderDiscountService;
 
     public ResponseEntity<?> addToOrder(OrderDto orderDto, DishDto newDishDto) {
 
         OrderItemDto newDishToList = OrderItemDto
                 .builder()
-                .dish(newDishDto)
+                .dishDto(newDishDto)
                 .quantity(1)
                 .build();
 
-        if(orderDto.getOrder() == null){
+        if(orderDto.getOrderDto() == null){
             List<OrderItemDto> orderItem = List.of(newDishToList);
-            orderDto = orderDto.toBuilder().order(orderItem).build();
+            orderDto = orderDto.toBuilder().orderDto(orderItem).build();
         } else {
             orderDto = addDish(orderDto,newDishToList);
         }
-        orderDto = orderDto.toBuilder().cost(recalculateCost(orderDto)).build();
+
+        orderDto = orderDto.toBuilder()
+                .orderDiscountDto(orderDto.getOrderDiscountDto()
+                        .toBuilder()
+                        .oldCost(recalculateCost(orderDto))
+                        .build())
+                .cost(recalculateCost(orderDto))
+                .build();
+
+        if(orderDto.getOrderDiscountDto().getIsLoggedIn() && orderDto.getOrderDiscountDto().getIsEnabled()){
+            orderDto = orderDto.toBuilder()
+                    .cost(checkDiscount(orderDto))
+                    .build();
+        }
 
         return ResponseEntity.ok(orderDto);
     }
 
     public OrderDto addDish(OrderDto orderDto, OrderItemDto newDishToListDto){
-        Optional<OrderItemDto> existingDish = orderDto.getOrder().stream()
-                .filter(r -> r.getDish().getId().equals(newDishToListDto.getDish().getId()))
+        Optional<OrderItemDto> existingDish = orderDto.getOrderDto().stream()
+                .filter(r -> r.getDishDto().getId().equals(newDishToListDto.getDishDto().getId()))
                 .findFirst();
 
         if (existingDish.isPresent()) {
@@ -57,21 +71,21 @@ public class OrderService {
 
             dishToUpdate = dishToUpdate.toBuilder().quantity(dishToUpdate.getQuantity()+1).build();
 
-            List<OrderItemDto> orderItems = orderDto.getOrder();
+            List<OrderItemDto> orderItems = orderDto.getOrderDto();
             orderItems.set(orderItems.indexOf(existingDish.get()), dishToUpdate);
-            orderDto = orderDto.toBuilder().order(orderItems).build();
+            orderDto = orderDto.toBuilder().orderDto(orderItems).build();
 
         } else {
-            List<OrderItemDto> orderItems = orderDto.getOrder();
+            List<OrderItemDto> orderItems = orderDto.getOrderDto();
             orderItems.add(newDishToListDto);
-            orderDto.toBuilder().order(orderItems).build();
+            orderDto.toBuilder().orderDto(orderItems).build();
         }
         return orderDto;
     }
 
-    public ResponseEntity<?> removeFromOrder(OrderDto orderDto, DishDto dishDto) {
-        Optional<OrderItemDto> existingDish = orderDto.getOrder().stream()
-                .filter(r -> r.getDish().getId().equals(dishDto.getId()))
+    public ResponseEntity<?> removeFromOrder(OrderDto orderDto, DishDto dishDto, Boolean isLoggedIn, DiscountSettingsDto discountSettingsDto) {
+        Optional<OrderItemDto> existingDish = orderDto.getOrderDto().stream()
+                .filter(r -> r.getDishDto().getId().equals(dishDto.getId()))
                 .findFirst();
 
         if (existingDish.isPresent()) {
@@ -80,11 +94,13 @@ public class OrderService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order do not include dish");
         }
 
+        orderDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto, orderDto);
+
         return ResponseEntity.ok(orderDto.toBuilder().cost(recalculateCost(orderDto)).build());
     }
 
     public OrderDto decrementQuantity(OrderDto orderDto, OrderItemDto dishToRemoveDto){
-        List<OrderItemDto> orderItemsDto = orderDto.getOrder();
+        List<OrderItemDto> orderItemsDto = orderDto.getOrderDto();
 
         if (dishToRemoveDto.getQuantity() == 1) {
             orderItemsDto.remove(dishToRemoveDto);
@@ -92,11 +108,13 @@ public class OrderService {
             OrderItemDto dishToRemoveDtoAfter = dishToRemoveDto.toBuilder().quantity(dishToRemoveDto.getQuantity()-1).build();
             orderItemsDto.set(orderItemsDto.indexOf(dishToRemoveDto), dishToRemoveDtoAfter);
         }
-        return orderDto.toBuilder().order(orderItemsDto).build();
+        return orderDto.toBuilder().orderDto(orderItemsDto).build();
     }
 
-    public ResponseEntity<?> acceptOrder(OrderDto orderDto) {
-        List<OrderItemDto> orderItems = orderDto.getOrder();
+    public ResponseEntity<?> acceptOrder(OrderDto orderDto, String userId) {
+
+
+        List<OrderItemDto> orderItems = orderDto.getOrderDto();
 
         if(!validateDishesInOrder(orderItems)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One of the dishes is not valid");
@@ -114,9 +132,6 @@ public class OrderService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Table number is not valid");
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-
 //        if (authentication instanceof AnonymousAuthenticationToken){
 //            System.out.println(authentication.getName());
 //        }
@@ -125,9 +140,8 @@ public class OrderService {
 
         order = order.toBuilder().status(StatusType.NEW).date(LocalDateTime.now()).build();
 
-        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()))) {
-            User user = (User) authentication.getPrincipal();
-            order = order.toBuilder().userId(user.getId()).build();
+        if (userId != null) {
+            order = order.toBuilder().userId(userId).build();
         }
 
         return ResponseEntity.ok(orderRepository.save(order));
@@ -135,7 +149,7 @@ public class OrderService {
 
     public boolean validateDishesInOrder(List<OrderItemDto> orderItemsDto) {
         for (OrderItemDto orderItemDto : orderItemsDto) {
-            Optional<Dish> dbDish = dishRepository.findById(orderItemDto.getDish().getId());
+            Optional<Dish> dbDish = dishRepository.findById(orderItemDto.getDishDto().getId());
             if(dbDish.isEmpty()){
                 return false;
             }
@@ -146,21 +160,23 @@ public class OrderService {
         return true;
     }
 
-    public double recalculateCost(OrderDto orderDto) {
-        for (OrderItemDto orderItemDto : orderDto.getOrder()) {
-            orderItemDto.setCost(roundToTwoDecimalPlaces(orderItemDto.getDish().getPrice() * orderItemDto.getQuantity()));
+    public Double recalculateCost(OrderDto orderDto) {
+        for (OrderItemDto orderItemDto : orderDto.getOrderDto()) {
+            orderItemDto.setCost(orderItemDto.getDishDto().getPrice() * orderItemDto.getQuantity());
         }
 
-        return roundToTwoDecimalPlaces(orderDto.getOrder().stream()
+        double cost = roundToTwoDecimalPlaces(orderDto.getOrderDto().stream()
                 .mapToDouble(OrderItemDto::getCost)
                 .sum());
+
+        return roundToTwoDecimalPlaces(cost);
     }
 
     public boolean isDishValid(OrderItemDto orderItemDto, Dish dbDish) {
-        return isDishTypeValid(orderItemDto.getDish().getDishType().toString(), dbDish.getDishType().toString()) &&
-                isDishNameValid(orderItemDto.getDish().getName(),dbDish.getName()) &&
-                isDishPriceValid(orderItemDto.getDish().getPrice(), dbDish.getPrice()) &&
-                isDishIngredientsValid(orderItemDto.getDish().getIngredients(), dbDish.getIngredients()) &&
+        return isDishTypeValid(orderItemDto.getDishDto().getDishType().toString(), dbDish.getDishType().toString()) &&
+                isDishNameValid(orderItemDto.getDishDto().getName(),dbDish.getName()) &&
+                isDishPriceValid(orderItemDto.getDishDto().getPrice(), dbDish.getPrice()) &&
+                isDishIngredientsValid(orderItemDto.getDishDto().getIngredients(), dbDish.getIngredients()) &&
                 isDishCostValid(orderItemDto.getCost(), orderItemDto.getQuantity(), dbDish.getPrice());
     }
 
@@ -186,17 +202,23 @@ public class OrderService {
 
     public boolean isTotalCostValid(OrderDto orderDto) {
         Double dbCost = 0.0;
-        for (OrderItemDto orderItem : orderDto.getOrder()) {
-            Optional<Dish> optionalDbDish = dishRepository.findById(orderItem.getDish().getId());
+        for (OrderItemDto orderItem : orderDto.getOrderDto()) {
+            Optional<Dish> optionalDbDish = dishRepository.findById(orderItem.getDishDto().getId());
             if (optionalDbDish.isPresent()) {
                 Dish dbDish = optionalDbDish.get();
                 dbCost += dbDish.getPrice()*orderItem.getQuantity();
             }
         }
 
+        if(orderDto.getOrderDiscountDto().getIsLoggedIn()
+                && orderDto.getOrderDiscountDto().getIsEnabled()
+                && orderDto.getOrderDiscountDto().getOrdersRequired() % orderDto.getOrderDiscountDto().getOrdersCount() == 0) {
+                dbCost = dbCost * orderDto.getOrderDiscountDto().getDiscountPercentage();
+        }
+
         dbCost = roundToTwoDecimalPlaces(dbCost);
 
-        Double calculatedTotalCost = roundToTwoDecimalPlaces(orderDto.getOrder().stream()
+        Double calculatedTotalCost = roundToTwoDecimalPlaces(orderDto.getOrderDto().stream()
                 .mapToDouble(OrderItemDto::getCost)
                 .sum());
 
@@ -216,13 +238,39 @@ public class OrderService {
     }
 
     public ResponseEntity<?> getUserHistory() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
-        List<Order> orderHistory = orderRepository.findAllByUserId(user.getId());
-        return ResponseEntity.ok(orderHistory);
+        return ResponseEntity.ok(getHistory());
     }
 
     public ResponseEntity<?> getOrders() {
         return ResponseEntity.ok(orderRepository.findAll());
+    }
+
+    public ResponseEntity<?> getUserNumberOfOrders() {
+        return ResponseEntity.ok(getNumberOfOrders());
+    }
+
+    public List<Order> getHistory() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        return orderRepository.findAllByUserId(user.getId());
+    }
+
+    public Integer getNumberOfOrders(){
+        return getHistory().size();
+    }
+
+    public Double checkDiscount(OrderDto orderDto){
+
+        Double cost = orderDto.getCost();
+
+        if(orderDto.getOrderDiscountDto().getIsUsed()){
+            cost = cost * orderDto.getOrderDiscountDto().getDiscountPercentage();
+        }
+
+        return cost;
+    }
+
+    public DiscountSettings getDiscountSettings(){
+        return discountSettingsRepository.findAll().get(0);
     }
 }

@@ -1,18 +1,26 @@
 package com.example.DishQR_api.controller;
 
+import com.example.DishQR_api.dto.DiscountSettingsDto;
 import com.example.DishQR_api.dto.DishDto;
+import com.example.DishQR_api.dto.OrderDiscountDto;
 import com.example.DishQR_api.dto.OrderDto;
+import com.example.DishQR_api.mapper.DiscountSettingsMapper;
 import com.example.DishQR_api.mapper.DishMapper;
-import com.example.DishQR_api.model.Dish;
+import com.example.DishQR_api.mapper.OrderDiscountMapper;
+import com.example.DishQR_api.model.*;
 import com.example.DishQR_api.repository.DishRepository;
+import com.example.DishQR_api.service.OrderDiscountService;
 import com.example.DishQR_api.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,13 +31,30 @@ import java.util.Optional;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderDiscountService orderDiscountService;
     private final DishRepository dishRepository;
     private final DishMapper dishMapper;
+    private final DiscountSettingsMapper discountSettingsMapper;
 
     @PostMapping(path = "/acceptOrder")
     public ResponseEntity<?> acceptOrder(@RequestBody(required=false) OrderDto orderDto){
 
-        return orderService.acceptOrder(orderDto);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String userId = null;
+
+        DiscountSettingsDto discountSettingsDto = discountSettingsMapper.toDto(orderService.getDiscountSettings());
+
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()))) {
+            User user = (User) authentication.getPrincipal();
+            userId = user.getId();
+        }
+
+        Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
+
+        orderDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto, orderDto);
+
+        return orderService.acceptOrder(orderDto, userId);
     }
 
     @GetMapping(path = "/getOrders")
@@ -47,6 +72,14 @@ public class OrderController {
 
         DishDto dishDto = dishMapper.toDto(dish.get());
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
+
+        DiscountSettingsDto discountSettingsDto = discountSettingsMapper.toDto(orderService.getDiscountSettings());
+
+        orderDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto, orderDto);
+
         return orderService.addToOrder(orderDto, dishDto);
     }
 
@@ -58,13 +91,25 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dish do not exist");
         }
 
-        if(orderDto.getOrder() == null){
+        if(orderDto.getOrderDto() == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is empty");
         }
 
         DishDto dishDto = dishMapper.toDto(dish.get());
 
-        return orderService.removeFromOrder(orderDto, dishDto);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
+
+        DiscountSettingsDto discountSettingsDto = discountSettingsMapper.toDto(orderService.getDiscountSettings());
+
+        return orderService.removeFromOrder(orderDto, dishDto, isLoggedIn, discountSettingsDto);
+    }
+
+    @GetMapping(path = "/getUserNumberOfOrders")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public ResponseEntity<?> getUserNumberOfOrders(){
+        return orderService.getUserNumberOfOrders();
     }
 
     @GetMapping(path = "/getUserHistory")

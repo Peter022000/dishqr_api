@@ -23,4 +23,5 @@ public class Order {
     private PaymentMethod paymentMethod;
     private LocalDateTime date;
     private StatusType status;
+    private OrderDiscount orderDiscount;
 }
