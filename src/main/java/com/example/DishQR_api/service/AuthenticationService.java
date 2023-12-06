@@ -59,6 +59,10 @@ public class AuthenticationService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email taken");
         }
 
+        if(!request.getPassword().equals(request.getRepeatPassword())){
+            return ResponseEntity.badRequest().body("Password doesnt match");
+        }
+
         User user = User
                 .builder()
                 .email(request.getEmail())
