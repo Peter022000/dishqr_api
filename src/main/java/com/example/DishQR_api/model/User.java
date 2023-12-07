@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -25,14 +25,11 @@ public class User implements UserDetails {
 
     @Indexed(unique = true)
     private String email;
-
     private String password;
-
     private Role role;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
+    private Integer lastDiscountOrderNumber;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

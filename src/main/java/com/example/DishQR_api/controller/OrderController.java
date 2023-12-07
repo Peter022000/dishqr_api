@@ -54,7 +54,7 @@ public class OrderController {
 
         Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
 
-        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto);
+        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, userId, discountSettingsDto);
 
         orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
@@ -77,12 +77,18 @@ public class OrderController {
         DishDto dishDto = dishMapper.toDto(dish.get());
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = null;
 
         Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
 
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()))) {
+            User user = (User) authentication.getPrincipal();
+            userId = user.getId();
+        }
+
         DiscountSettingsDto discountSettingsDto = discountSettingsMapper.toDto(orderService.getDiscountSettings());
 
-        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto);
+        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, userId, discountSettingsDto);
 
         orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
@@ -109,7 +115,14 @@ public class OrderController {
 
         Boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()));
 
-        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, discountSettingsDto);
+        String userId = null;
+
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ROLE_USER.toString()))) {
+            User user = (User) authentication.getPrincipal();
+            userId = user.getId();
+        }
+
+        OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, userId, discountSettingsDto);
 
         orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
