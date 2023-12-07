@@ -2,6 +2,7 @@ package com.example.DishQR_api.mapper;
 
 import com.example.DishQR_api.dto.OrderDto;
 import com.example.DishQR_api.model.Order;
+import com.example.DishQR_api.model.OrderDiscount;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,13 +14,15 @@ import java.util.stream.Collectors;
 public class OrderMapper {
 
     private final OrderItemMapper orderItemMapper;
+    private final OrderDiscountMapper orderDiscountMapper;
 
     public OrderDto toDto(Order order) {
         return OrderDto.builder()
                 .tableNoId(order.getTableNoId())
                 .cost(order.getCost())
-                .order(orderItemMapper.toDtoList(order.getOrder()))
+                .orderDishesDto(orderItemMapper.toDtoList(order.getOrder()))
                 .paymentMethod(order.getPaymentMethod())
+                .orderDiscountDto(orderDiscountMapper.toDto(order.getOrderDiscount()))
                 .build();
     }
 
@@ -27,8 +30,9 @@ public class OrderMapper {
         return Order.builder()
                 .tableNoId(orderDto.getTableNoId())
                 .cost(orderDto.getCost())
-                .order(orderItemMapper.toEntityList(orderDto.getOrder()))
+                .order(orderItemMapper.toEntityList(orderDto.getOrderDishesDto()))
                 .paymentMethod(orderDto.getPaymentMethod())
+                .orderDiscount(orderDiscountMapper.toEntity(orderDto.getOrderDiscountDto()))
                 .build();
     }
 

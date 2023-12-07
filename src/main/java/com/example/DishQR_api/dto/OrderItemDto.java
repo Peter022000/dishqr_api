@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class OrderItemDto {
-    private DishDto dish;
+    private DishDto dishDto;
     private Integer quantity;
     private Double cost;
 }

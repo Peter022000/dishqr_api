@@ -16,7 +16,7 @@ public class OrderItemMapper {
 
     public OrderItemDto toDto(OrderItem orderItem) {
         return OrderItemDto.builder()
-                .dish(dishMapper.toDto(orderItem.getDish()))
+                .dishDto(dishMapper.toDto(orderItem.getDish()))
                 .quantity(orderItem.getQuantity())
                 .cost(orderItem.getCost())
                 .build();
@@ -24,7 +24,7 @@ public class OrderItemMapper {
 
     public OrderItem toEntity(OrderItemDto orderItemDto) {
         return OrderItem.builder()
-                .dish(dishMapper.toEntity(orderItemDto.getDish()))
+                .dish(dishMapper.toEntity(orderItemDto.getDishDto()))
                 .quantity(orderItemDto.getQuantity())
                 .cost(orderItemDto.getCost())
                 .build();
