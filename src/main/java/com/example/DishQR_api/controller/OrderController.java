@@ -6,11 +6,11 @@ import com.example.DishQR_api.dto.OrderDiscountDto;
 import com.example.DishQR_api.dto.OrderDto;
 import com.example.DishQR_api.mapper.DiscountSettingsMapper;
 import com.example.DishQR_api.mapper.DishMapper;
-import com.example.DishQR_api.mapper.OrderDiscountMapper;
 import com.example.DishQR_api.model.*;
 import com.example.DishQR_api.repository.DishRepository;
 import com.example.DishQR_api.service.OrderDiscountService;
 import com.example.DishQR_api.service.OrderService;
+import com.example.DishQR_api.service.RecommendationService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +31,9 @@ public class OrderController {
 
     private final OrderService orderService;
     private final OrderDiscountService orderDiscountService;
+
+    private final RecommendationService recommendationService;
+
     private final DishRepository dishRepository;
     private final DishMapper dishMapper;
     private final DiscountSettingsMapper discountSettingsMapper;
@@ -134,4 +136,24 @@ public class OrderController {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping(path = "/getRecommendation")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public ResponseEntity<?> getRecommendation(){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        User user = (User) authentication.getPrincipal();
+        String userId = user.getId();
+
+        if(orderService.getNumberOfOrders() == 0) {
+            ResponseEntity.badRequest().body("History is empty");
+        }
+
+        int topIngredientsCount = 5; // Domyślna liczba rekomendowanych składników, możesz dostosować
+        int topDishesCount = 5; // Domyślna liczba rekomendowanych składników, możesz dostosować
+
+        // Tutaj możesz zrobić coś z rekomendowanymi składnikami, na przykład przekazać do frontendu
+
+        return ResponseEntity.ok(recommendationService.getRecommendedDishesForCustomer(userId, topIngredientsCount, topDishesCount));
+    }
 }
