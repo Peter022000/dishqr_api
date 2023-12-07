@@ -10,7 +10,6 @@ import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.repository.DishRepository;
 import com.example.DishQR_api.repository.OrderRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

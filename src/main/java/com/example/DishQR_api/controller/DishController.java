@@ -1,10 +1,8 @@
 package com.example.DishQR_api.controller;
 
-import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.service.DishService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
