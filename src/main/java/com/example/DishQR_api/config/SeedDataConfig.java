@@ -1,17 +1,21 @@
 package com.example.DishQR_api.config;
 
 import com.example.DishQR_api.model.DiscountSettings;
+import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.model.Role;
 import com.example.DishQR_api.model.User;
 import com.example.DishQR_api.repository.DiscountSettingsRepository;
 import com.example.DishQR_api.repository.UserRepository;
 import com.example.DishQR_api.service.DiscountSettingsService;
+import com.example.DishQR_api.service.DishService;
 import com.example.DishQR_api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +27,8 @@ public class SeedDataConfig implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final DiscountSettingsService discountSettingsService;
+
+    private final DishService dishService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -48,6 +54,12 @@ public class SeedDataConfig implements CommandLineRunner {
                     .build();
             discountSettingsService.save(settings);
             System.out.println("created discount settings");
+        }
+        if (dishService.count() == 0) {
+            DishesConfig dishesConfig = YamlLoader.loadDishesConfig("dishes.yaml");
+            List<Dish> dishes = dishesConfig.getDishes();
+            dishService.saveAll(dishes);
+            log.debug("Loaded dishes from YAML file");
         }
     }
 }

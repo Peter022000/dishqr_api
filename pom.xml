@@ -68,7 +68,13 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
-		</dependency>	</dependencies>
+		</dependency>
+		<dependency>
+			<groupId>com.esotericsoftware.yamlbeans</groupId>
+			<artifactId>yamlbeans</artifactId>
+			<version>1.17</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>

@@ -21,4 +21,12 @@ public class DishService {
         List<Dish> dishes = dishRepository.findAll();
         return ResponseEntity.ok(dishMapper.toDtoList(dishes));
     }
+
+    public Long count() {
+        return dishRepository.count();
+    }
+
+    public void saveAll(List<Dish> dishes) {
+        dishRepository.saveAll(dishes);
+    }
 }

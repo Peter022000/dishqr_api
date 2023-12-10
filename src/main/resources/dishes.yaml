@@ -1,0 +1,352 @@
+dishes:
+  - dishType: soup
+    name: "Pomidorowa"
+    price: 15.99
+    ingredients:
+      - "pomidor"
+      - "cebula"
+      - "ziemniak"
+      - "marchewka"
+      - "natka pietruszki"
+  - dishType: soup
+    name: "Rosół"
+    price: 17.50
+    ingredients:
+      - "kurczak"
+      - "marchewka"
+      - "pietruszka"
+      - "por"
+      - "ziemniak"
+  - dishType: soup
+    name: "Zupa krem z brokułów"
+    price: 18.75
+    ingredients:
+      - "brokuły"
+      - "cebula"
+      - "ziemniak"
+      - "śmietana"
+  - dishType: soup
+    name: "Chłodnik"
+    price: 16.50
+    ingredients:
+      - "ogórek"
+      - "śmietana"
+      - "rzodkiewka"
+      - "koper"
+  - dishType: soup
+    name: "Krem z dyni"
+    price: 19.00
+    ingredients:
+      - "dynia"
+      - "cebula"
+      - "ziemniak"
+      - "imbir"
+      - "śmietana"
+  - dishType: soup
+    name: "Zupa pomidorowa z ryżem"
+    price: 16.99
+    ingredients:
+      - "pomidor"
+      - "cebula"
+      - "ryż"
+      - "bazylia"
+      - "sól"
+  - dishType: soup
+    name: "Zupa ogórkowa"
+    price: 17.25
+    ingredients:
+      - "ogórek"
+      - "ziemniak"
+      - "marchewka"
+      - "koper"
+      - "śmietana"
+  - dishType: soup
+    name: "Zupa koperkowa"
+    price: 16.50
+    ingredients:
+      - "ziemniak"
+      - "por"
+      - "koper"
+      - "śmietana"
+  - dishType: soup
+    name: "Zupa z czerwonej soczewicy"
+    price: 18.50
+    ingredients:
+      - "czerwona soczewica"
+      - "cebula"
+      - "marchewka"
+      - "pomidor"
+      - "kolendra"
+  - dishType: soup
+    name: "Zupa z krewetek"
+    price: 22.50
+    ingredients:
+      - "krewetki"
+      - "pomidor"
+      - "cebula"
+      - "czosnek"
+      - "papryczki chili"
+  - dishType: mainCourse
+    name: "Kotlet schabowy"
+    price: 25.50
+    ingredients:
+      - "schab"
+      - "jajko"
+      - "bułka tarta"
+      - "sól"
+      - "pieprz"
+  - dishType: mainCourse
+    name: "Lasagne"
+    price: 28.75
+    ingredients:
+      - "makaron"
+      - "mięso mielone"
+      - "cebula"
+      - "pomidor"
+      - "ser"
+  - dishType: mainCourse
+    name: "Kurczak curry"
+    price: 22.99
+    ingredients:
+      - "kurczak"
+      - "curry"
+      - "cebula"
+      - "pomidor"
+      - "ryż"
+  - dishType: mainCourse
+    name: "Ryba pieczona z ziemniakami"
+    price: 30.50
+    ingredients:
+      - "ryba"
+      - "ziemniak"
+      - "cebula"
+      - "czosnek"
+      - "świeża pietruszka"
+  - dishType: mainCourse
+    name: "Sałatka grecka"
+    price: 21.25
+    ingredients:
+      - "pomidory"
+      - "ogórek"
+      - "ser feta"
+      - "oliwki"
+      - "cebula"
+  - dishType: mainCourse
+    name: "Kotlet mielony"
+    price: 24.00
+    ingredients:
+      - "mięso mielone"
+      - "cebula"
+      - "jajko"
+      - "bułka tarta"
+      - "sól"
+  - dishType: mainCourse
+    name: "Makaron z kurczakiem i brokułami"
+    price: 19.99
+    ingredients:
+      - "makaron"
+      - "kurczak"
+      - "brokuły"
+      - "śmietana"
+      - "ser"
+  - dishType: mainCourse
+    name: "Krewetki w sosie pomidorowym"
+    price: 32.50
+    ingredients:
+      - "krewetki"
+      - "pomidor"
+      - "czosnek"
+      - "cebula"
+      - "bazylia"
+  - dishType: mainCourse
+    name: "Kotlety z indyka z sosem żurawinowym"
+    price: 27.75
+    ingredients:
+      - "indyk"
+      - "jajko"
+      - "bułka tarta"
+      - "żurawina"
+      - "sól"
+  - dishType: mainCourse
+    name: "Risotto z pieczarkami"
+    price: 23.50
+    ingredients:
+      - "ryż do risotto"
+      - "pieczarki"
+      - "cebula"
+      - "białe wino"
+      - "parmezan"
+  - dishType: soup
+    name: "Zupa ziemniaczana"
+    price: 16.75
+    ingredients:
+      - "ziemniak"
+      - "cebula"
+      - "por"
+      - "śmietana"
+      - "koper"
+  - dishType: soup
+    name: "Krem z szparagów"
+    price: 21.00
+    ingredients:
+      - "szparagi"
+      - "cebula"
+      - "ziemniak"
+      - "śmietana"
+      - "masło"
+  - dishType: soup
+    name: "Zupa cebulowa"
+    price: 19.50
+    ingredients:
+      - "cebula"
+      - "bulion"
+      - "chleb"
+      - "ser"
+  - dishType: soup
+    name: "Zupa z soczewicy"
+    price: 18.25
+    ingredients:
+      - "soczewica"
+      - "marchewka"
+      - "cebula"
+      - "pomidor"
+      - "kolendra"
+  - dishType: soup
+    name: "Krem z pieczarek"
+    price: 20.50
+    ingredients:
+      - "pieczarki"
+      - "cebula"
+      - "ziemniak"
+      - "śmietana"
+  - dishType: soup
+    name: "Zupa z dyni i kokosa"
+    price: 22.99
+    ingredients:
+      - "dynia"
+      - "cebula"
+      - "mleko kokosowe"
+      - "imbir"
+      - "kolendra"
+  - dishType: soup
+    name: "Chowder z krewetkami"
+    price: 26.75
+    ingredients:
+      - "krewetki"
+      - "ziemniak"
+      - "cebula"
+      - "boczek"
+      - "śmietana"
+  - dishType: soup
+    name: "Zupa minestrone"
+    price: 18.50
+    ingredients:
+      - "pomidor"
+      - "fasola"
+      - "marchewka"
+      - "cebula"
+      - "makaron"
+  - dishType: soup
+    name: "Krem z brokułów i cheddaru"
+    price: 21.99
+    ingredients:
+      - "brokuły"
+      - "cebula"
+      - "ziemniak"
+      - "ser cheddar"
+  - dishType: soup
+    name: "Zupa krem z pora"
+    price: 19.75
+    ingredients:
+      - "por"
+      - "ziemniak"
+      - "cebula"
+      - "śmietana"
+  - dishType: mainCourse
+    name: "Kotlety z dorsza"
+    price: 29.50
+    ingredients:
+      - "dorsz"
+      - "ziemniak"
+      - "cebula"
+      - "jajko"
+      - "bułka tarta"
+  - dishType: mainCourse
+    name: "Kurczak w sosie śmietanowym"
+    price: 24.99
+    ingredients:
+      - "kurczak"
+      - "śmietana"
+      - "cebula"
+      - "czosnek"
+      - "pieprz"
+  - dishType: mainCourse
+    name: "Spaghetti Bolognese"
+    price: 26.75
+    ingredients:
+      - "mięso mielone"
+      - "pomidor"
+      - "cebula"
+      - "czosnek"
+      - "makaron"
+  - dishType: mainCourse
+    name: "Sałatka cezar z kurczakiem"
+    price: 22.50
+    ingredients:
+      - "kurczak"
+      - "sałata rzymska"
+      - "parmezan"
+      - "grzanki"
+      - "sos cezar"
+  - dishType: mainCourse
+    name: "Krewetki w sosie czosnkowym"
+    price: 32.99
+    ingredients:
+      - "krewetki"
+      - "czosnek"
+      - "masło"
+      - "papryczka chili"
+      - "natka pietruszki"
+  - dishType: mainCourse
+    name: "Filet z łososia na grillu"
+    price: 30.25
+    ingredients:
+      - "łosoś"
+      - "sok z cytryny"
+      - "pieprz"
+      - "sól"
+  - dishType: mainCourse
+    name: "Ratatouille"
+    price: 23.50
+    ingredients:
+      - "bakłażan"
+      - "cukinia"
+      - "pomidor"
+      - "cebula"
+      - "papryka"
+  - dishType: mainCourse
+    name: "Kotlety jagnięce"
+    price: 34.75
+    ingredients:
+      - "jagnięcina"
+      - "czosnek"
+      - "pieprz"
+      - "sól"
+  - dishType: mainCourse
+    name: "Ravioli z ricottą i szpinakiem"
+    price: 27.99
+    ingredients:
+      - "ravioli"
+      - "ricotta"
+      - "szpinak"
+      - "parmezan"
+      - "masło"
+  - dishType: mainCourse
+    name: "Kotlety sojowe z warzywami"
+    price: 20.50
+    ingredients:
+      - "kotlety sojowe"
+      - "marchewka"
+      - "ziemniak"
+      - "cebula"
+      - "papryka"
