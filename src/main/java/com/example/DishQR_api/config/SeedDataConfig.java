@@ -1,13 +1,13 @@
 package com.example.DishQR_api.config;
 
-import com.example.DishQR_api.model.DiscountSettings;
-import com.example.DishQR_api.model.Dish;
-import com.example.DishQR_api.model.Role;
-import com.example.DishQR_api.model.User;
+import com.example.DishQR_api.model.*;
 import com.example.DishQR_api.repository.DiscountSettingsRepository;
+import com.example.DishQR_api.repository.DishRepository;
+import com.example.DishQR_api.repository.QrCodeRepository;
 import com.example.DishQR_api.repository.UserRepository;
 import com.example.DishQR_api.service.DiscountSettingsService;
 import com.example.DishQR_api.service.DishService;
+import com.example.DishQR_api.service.QrCodeService;
 import com.example.DishQR_api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,16 +23,26 @@ import java.util.List;
 public class SeedDataConfig implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final QrCodeRepository qrCodeRepository;
+    private final DishRepository dishRepository;
     private final DiscountSettingsRepository discountSettingsRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final DiscountSettingsService discountSettingsService;
-
     private final DishService dishService;
+    private final QrCodeService qrCodeService;
 
     @Override
     public void run(String... args) throws Exception {
 
+        if(qrCodeRepository.count() == 0){
+            QrCode qrCode = QrCode
+                    .builder()
+                    .qrCode("1")
+                    .type(QrCodeType.tableNo)
+                    .build();
+            qrCodeService.save(qrCode);
+        }
         if (userRepository.count() == 0) {
 
             User admin = User
@@ -55,7 +65,7 @@ public class SeedDataConfig implements CommandLineRunner {
             discountSettingsService.save(settings);
             System.out.println("created discount settings");
         }
-        if (dishService.count() == 0) {
+        if (dishRepository.count() == 0) {
             DishesConfig dishesConfig = YamlLoader.loadDishesConfig("dishes.yaml");
             List<Dish> dishes = dishesConfig.getDishes();
             dishService.saveAll(dishes);
