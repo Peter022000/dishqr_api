@@ -1,9 +1,6 @@
 package com.example.DishQR_api.controller;
 
-import com.example.DishQR_api.dto.DiscountSettingsDto;
-import com.example.DishQR_api.dto.DishDto;
-import com.example.DishQR_api.dto.OrderDiscountDto;
-import com.example.DishQR_api.dto.OrderDto;
+import com.example.DishQR_api.dto.*;
 import com.example.DishQR_api.mapper.DiscountSettingsMapper;
 import com.example.DishQR_api.mapper.DishMapper;
 import com.example.DishQR_api.model.*;
@@ -21,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -39,7 +37,7 @@ public class OrderController {
     private final DiscountSettingsMapper discountSettingsMapper;
 
     @PostMapping(path = "/acceptOrder")
-    public ResponseEntity<?> acceptOrder(@RequestBody(required=false) OrderDto orderDto){
+    public ResponseEntity<?> acceptOrder(@RequestBody(required=false) CartOrderDto cartOrderDto){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -56,9 +54,9 @@ public class OrderController {
 
         OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, userId, discountSettingsDto);
 
-        orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
+        cartOrderDto = cartOrderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
-        return orderService.acceptOrder(orderDto, userId);
+        return orderService.acceptOrder(cartOrderDto, userId);
     }
 
     @GetMapping(path = "/getOrders")
@@ -67,7 +65,7 @@ public class OrderController {
     }
 
     @PostMapping(path = "/addToOrder")
-    public ResponseEntity<?> addToOrder(@RequestBody(required=false) OrderDto orderDto, @RequestParam String dishId){
+    public ResponseEntity<?> addToOrder(@RequestBody(required=false) CartOrderDto cartOrderDto, @RequestParam String dishId){
 
         Optional<Dish> dish = dishRepository.findById(dishId);
         if(dish.isEmpty()){
@@ -90,20 +88,20 @@ public class OrderController {
 
         OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, userId, discountSettingsDto);
 
-        orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
+        cartOrderDto = cartOrderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
-        return orderService.addToOrder(orderDto, dishDto);
+        return orderService.addToOrder(cartOrderDto, dishDto);
     }
 
     @PostMapping(path = "/removeFromOrder")
-    public ResponseEntity<?> removeFromOrder(@RequestBody(required=false) OrderDto orderDto, @RequestParam String dishId){
+    public ResponseEntity<?> removeFromOrder(@RequestBody(required=false) CartOrderDto cartOrderDto, @RequestParam String dishId){
 
         Optional<Dish> dish = dishRepository.findById(dishId);
         if(dish.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dish do not exist");
         }
 
-        if(orderDto.getOrderDishesDto() == null){
+        if(cartOrderDto.getOrderDishesDto() == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is empty");
         }
 
@@ -124,9 +122,9 @@ public class OrderController {
 
         OrderDiscountDto orderDiscountDto = orderDiscountService.checkOrderDiscount(isLoggedIn, userId, discountSettingsDto);
 
-        orderDto = orderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
+        cartOrderDto = cartOrderDto.toBuilder().orderDiscountDto(orderDiscountDto).build();
 
-        return orderService.removeFromOrder(orderDto, dishDto);
+        return orderService.removeFromOrder(cartOrderDto, dishDto);
     }
 
     @GetMapping(path = "/getUserNumberOfOrders")
@@ -149,6 +147,22 @@ public class OrderController {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping("/getNewOrders")
+    public ResponseEntity<?> getNewOrders() {
+        List<CartOrderDto> newOrders = orderService.getOrdersByStatus(StatusType.NEW);
+        return ResponseEntity.ok(newOrders);
+    }
+
+    @PostMapping("/changeOrderStatus")
+    public ResponseEntity<?> changeOrderStatus(@RequestBody ChangeOrderStatusRequest request) {
+        try {
+            orderService.changeOrderStatus(request.getOrderId(), request.getNewStatus());
+            return ResponseEntity.ok("Order status changed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error changing order status");
+        }
+    }
+
     @GetMapping(path = "/getRecommendation")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ResponseEntity<?> getRecommendation(){
@@ -162,10 +176,8 @@ public class OrderController {
             ResponseEntity.badRequest().body("History is empty");
         }
 
-        int topIngredientsCount = 5; // Domyślna liczba rekomendowanych składników, możesz dostosować
-        int topDishesCount = 5; // Domyślna liczba rekomendowanych składników, możesz dostosować
-
-        // Tutaj możesz zrobić coś z rekomendowanymi składnikami, na przykład przekazać do frontendu
+        int topIngredientsCount = 5;
+        int topDishesCount = 5;
 
         return ResponseEntity.ok(recommendationService.getRecommendedDishesForCustomer(userId, topIngredientsCount, topDishesCount));
     }
