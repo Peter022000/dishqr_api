@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,5 +33,25 @@ public class UserService {
 
         newUser.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(newUser);
+    }
+
+    public void updateUserLastDiscountOrderNumber(String userId, int lastDiscountOrderNumber) {
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if(userOptional.isPresent()){
+            User user = userOptional.get();
+            user = user.toBuilder().lastDiscountOrderNumber(lastDiscountOrderNumber).build();
+            userRepository.save(user);
+        }
+    }
+
+    public Integer getUserLastDiscountOrderNumber(String userId) {
+        Optional<User> user = userRepository.findById(userId);
+
+        if(user.isPresent()){
+            return user.get().getLastDiscountOrderNumber();
+        } else {
+            return 0;
+        }
     }
 }

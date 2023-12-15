@@ -27,6 +27,7 @@ public class OrderService {
     private final QrCodeRepository qrCodeRepository;
     private final DiscountSettingsRepository discountSettingsRepository;
     private final OrderMapper orderMapper;
+    private final UserService userService;
 
     public ResponseEntity<?> addToOrder(OrderDto orderDto, DishDto newDishDto) {
 
@@ -129,6 +130,10 @@ public class OrderService {
 
         if (userId != null) {
             order = order.toBuilder().userId(userId).build();
+        }
+
+        if(order.getOrderDiscount().getIsUsed()){
+            userService.updateUserLastDiscountOrderNumber(userId, this.getNumberOfOrders()+1);
         }
 
         return ResponseEntity.ok(orderRepository.save(order));

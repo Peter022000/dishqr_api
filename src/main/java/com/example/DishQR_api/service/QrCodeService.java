@@ -17,4 +17,8 @@ public class QrCodeService {
     public Optional<QrCode> checkCode(String id) {
         return qrCodeRepository.findById(id);
     }
+
+    public void save(QrCode qrCode) {
+        qrCodeRepository.save(qrCode);
+    }
 }

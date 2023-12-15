@@ -1,8 +1,6 @@
 package com.example.DishQR_api.mapper;
 
 import com.example.DishQR_api.dto.OrderDiscountDto;
-import com.example.DishQR_api.dto.OrderDto;
-import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.model.OrderDiscount;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

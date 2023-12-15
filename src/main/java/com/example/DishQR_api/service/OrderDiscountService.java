@@ -3,24 +3,19 @@ package com.example.DishQR_api.service;
 
 import com.example.DishQR_api.dto.DiscountSettingsDto;
 import com.example.DishQR_api.dto.OrderDiscountDto;
-import com.example.DishQR_api.dto.OrderDto;
-import com.example.DishQR_api.model.OrderDiscount;
-import com.example.DishQR_api.model.Role;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class OrderDiscountService {
 
     OrderService orderService;
+    UserService userService;
 
-    public OrderDiscountDto checkOrderDiscount(Boolean isLoggedIn, DiscountSettingsDto discountSettingsDto) {
+    public OrderDiscountDto checkOrderDiscount(Boolean isLoggedIn, String userId, DiscountSettingsDto discountSettingsDto) {
         if(isLoggedIn) {
-            return setOrderDiscount(orderService.getNumberOfOrders(), discountSettingsDto, true);
+            return setOrderDiscount(orderService.getNumberOfOrders()-userService.getUserLastDiscountOrderNumber(userId), discountSettingsDto, true);
         } else {
             return setOrderDiscount( -1, discountSettingsDto, false);
         }
@@ -47,7 +42,7 @@ public class OrderDiscountService {
                     .ordersRequired(discountSettingsDto.getOrdersRequired())
                     .build();
         }
-        
+
         if(orderDiscountDto.getIsLoggedIn()
                 && orderDiscountDto.getOrdersCount() > 0
                 && orderDiscountDto.getIsEnabled()
