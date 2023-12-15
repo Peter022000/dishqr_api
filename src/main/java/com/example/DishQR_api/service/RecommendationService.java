@@ -26,13 +26,10 @@ public class RecommendationService {
     public List<String> getRecommendedIngredientsForCustomer(String customerId, int topIngredientsCount) {
         Map<String, Long> ingredientCounts = new HashMap<>();
 
-        // Pobierz historię zamówień klienta z repozytorium MongoDB
         List<Order> customerOrders = orderRepository.findAllByUserId(customerId);
 
-        // Mapuj zamówienia na OrderDto za pomocą OrderMapper
         List<OrderDto> customerOrdersDto = orderMapper.toDtoList(customerOrders);
 
-        // Zliczaj składniki
         customerOrdersDto.forEach(orderDto -> {
             List<OrderItemDto> orderItems = orderDto.getOrderDishesDto();
             orderItems.forEach(item -> {
@@ -69,15 +66,12 @@ public class RecommendationService {
     public List<DishDto> getRecommendedDishesForCustomer(String customerId, int topIngredientsCount, int topDishesCount) {
         List<String> recommendedIngredients = getRecommendedIngredientsForCustomer(customerId, topIngredientsCount);
 
-        // Pobierz dania zawierające rekomendowane składniki
         List<Dish> recommendedDishes = dishRepository.findByIngredientsIn(recommendedIngredients);
 
 
-        // Sortuj dania według liczby składników w malejącej kolejności
         recommendedDishes.sort(Comparator.comparingInt(dish -> dish.getIngredients().size()));
         Collections.reverse(recommendedDishes);
 
-        // Ogranicz do topDishesCount dań
         recommendedDishes = recommendedDishes.stream()
                 .limit(topDishesCount* 2L)
                 .collect(Collectors.toList());
@@ -88,7 +82,6 @@ public class RecommendationService {
                 .limit(topDishesCount)
                 .collect(Collectors.toList());
 
-        // Mapuj dania na DishDto za pomocą odpowiedniego mappera
         return dishMapper.toDtoList(recommendedDishes);
     }
 }
