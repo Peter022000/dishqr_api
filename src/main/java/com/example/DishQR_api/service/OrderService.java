@@ -31,20 +31,20 @@ public class OrderService {
     private final AcceptedOrderMapper acceptedOrderMapper;
     private final UserService userService;
 
-    public List<CartOrderDto> getOrdersByStatus(StatusType status) {
+    public List<AcceptedOrderDto> getOrdersByStatus(StatusType status) {
         List<Order> orders = orderRepository.findAllByStatus(status);
-        List<CartOrderDto> ordersDto = cartOrderMapper.toDtoList(orders);
+        List<AcceptedOrderDto> ordersDto = acceptedOrderMapper.toDtoList(orders);
         return ordersDto;
     }
 
-    public void changeOrderStatus(String orderId, StatusType newStatus) {
+    public ResponseEntity<?> changeOrderStatus(String orderId, StatusType newStatus) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
             order = order.toBuilder().status(newStatus).build();
-            orderRepository.save(order);
+            return ResponseEntity.ok(orderRepository.save(order));
         } else {
-            throw new RuntimeException("Order not found with id: " + orderId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found with id: " + orderId);
         }
     }
 

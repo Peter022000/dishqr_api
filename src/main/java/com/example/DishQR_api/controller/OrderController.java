@@ -147,20 +147,15 @@ public class OrderController {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/getNewOrders")
-    public ResponseEntity<?> getNewOrders() {
-        List<CartOrderDto> newOrders = orderService.getOrdersByStatus(StatusType.NEW);
-        return ResponseEntity.ok(newOrders);
+    @GetMapping("/getOrdersByStatus")
+    public ResponseEntity<?> getOrdersByStatus(@RequestParam StatusType statusType) {
+        List<AcceptedOrderDto> orders = orderService.getOrdersByStatus(statusType);
+        return ResponseEntity.ok(orders);
     }
 
     @PostMapping("/changeOrderStatus")
     public ResponseEntity<?> changeOrderStatus(@RequestBody ChangeOrderStatusRequest request) {
-        try {
-            orderService.changeOrderStatus(request.getOrderId(), request.getNewStatus());
-            return ResponseEntity.ok("Order status changed successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error changing order status");
-        }
+        return orderService.changeOrderStatus(request.getAcceptedOrderDto().getId(), request.getNewStatus());
     }
 
     @GetMapping(path = "/getRecommendation")

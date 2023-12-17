@@ -21,6 +21,7 @@ public class AcceptedOrderDto {
     private String id;
     private String userId;
     private String tableNoId;
+    private String tableNo;
     private Double cost;
     private List<OrderItemDto> orderDishesDto;
     private PaymentMethod paymentMethod;

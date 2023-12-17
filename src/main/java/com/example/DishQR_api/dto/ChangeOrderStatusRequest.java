@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangeOrderStatusRequest {
-    String orderId;
+    AcceptedOrderDto acceptedOrderDto;
     StatusType newStatus;
 }
