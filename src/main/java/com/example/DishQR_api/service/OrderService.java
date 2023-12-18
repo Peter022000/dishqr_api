@@ -49,9 +49,7 @@ public class OrderService {
 
             Order savedOrder = orderRepository.save(order);
 
-            messagingTemplate.convertAndSend("/topic/changedStatusOrder", acceptedOrderMapper.toDto(savedOrder));
-
-            return ResponseEntity.ok(savedOrder);
+            return ResponseEntity.ok(acceptedOrderMapper.toDto(savedOrder));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found with id: " + orderId);
         }
