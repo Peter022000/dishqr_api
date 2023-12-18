@@ -12,15 +12,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping(path ="/order")
@@ -150,6 +149,7 @@ public class OrderController {
     @GetMapping("/getOrdersByStatus")
     public ResponseEntity<?> getOrdersByStatus(@RequestParam StatusType statusType) {
         List<AcceptedOrderDto> orders = orderService.getOrdersByStatus(statusType);
+        orders.sort(Comparator.comparing(AcceptedOrderDto::getDate).reversed());
         return ResponseEntity.ok(orders);
     }
 

@@ -1,14 +1,12 @@
 package com.example.DishQR_api.dto;
 
 import com.example.DishQR_api.model.OrderDiscount;
-import com.example.DishQR_api.model.OrderItem;
 import com.example.DishQR_api.model.PaymentMethod;
 import com.example.DishQR_api.model.StatusType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -25,7 +23,7 @@ public class AcceptedOrderDto {
     private Double cost;
     private List<OrderItemDto> orderDishesDto;
     private PaymentMethod paymentMethod;
-    private LocalDateTime date;
+    private Long date;
     private StatusType status;
     private Boolean isPayed;
     private OrderDiscount orderDiscount;
