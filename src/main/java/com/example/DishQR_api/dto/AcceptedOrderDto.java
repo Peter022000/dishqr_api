@@ -1,8 +1,10 @@
-package com.example.DishQR_api.model;
+package com.example.DishQR_api.dto;
 
+import com.example.DishQR_api.model.OrderDiscount;
+import com.example.DishQR_api.model.PaymentMethod;
+import com.example.DishQR_api.model.StatusType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,14 +14,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Document("orders")
-public class Order {
+public class AcceptedOrderDto {
     @Id
     private String id;
     private String userId;
     private String tableNoId;
+    private String tableNo;
     private Double cost;
-    private List<OrderItem> orderDishes;
+    private List<OrderItemDto> orderDishesDto;
     private PaymentMethod paymentMethod;
     private Long date;
     private StatusType status;

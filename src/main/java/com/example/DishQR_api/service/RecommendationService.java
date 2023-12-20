@@ -1,10 +1,12 @@
 package com.example.DishQR_api.service;
 
+import com.example.DishQR_api.dto.AcceptedOrderDto;
 import com.example.DishQR_api.dto.DishDto;
-import com.example.DishQR_api.dto.OrderDto;
+import com.example.DishQR_api.dto.CartOrderDto;
 import com.example.DishQR_api.dto.OrderItemDto;
+import com.example.DishQR_api.mapper.AcceptedOrderMapper;
 import com.example.DishQR_api.mapper.DishMapper;
-import com.example.DishQR_api.mapper.OrderMapper;
+import com.example.DishQR_api.mapper.CartOrderMapper;
 import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.repository.DishRepository;
@@ -19,7 +21,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class RecommendationService {
     private final OrderRepository orderRepository;
-    private final OrderMapper orderMapper;
+    private final AcceptedOrderMapper acceptedOrderMapper;
     private final DishRepository dishRepository;
     private final DishMapper dishMapper;
 
@@ -28,10 +30,10 @@ public class RecommendationService {
 
         List<Order> customerOrders = orderRepository.findAllByUserId(customerId);
 
-        List<OrderDto> customerOrdersDto = orderMapper.toDtoList(customerOrders);
+        List<AcceptedOrderDto> customerOrdersDto = acceptedOrderMapper.toDtoList(customerOrders);
 
-        customerOrdersDto.forEach(orderDto -> {
-            List<OrderItemDto> orderItems = orderDto.getOrderDishesDto();
+        customerOrdersDto.forEach(cartOrderDto -> {
+            List<OrderItemDto> orderItems = cartOrderDto.getOrderDishesDto();
             orderItems.forEach(item -> {
                 DishDto dish = item.getDishDto();
                 if (dish != null && dish.getIngredients() != null) {
@@ -53,7 +55,6 @@ public class RecommendationService {
 //
 //        System.out.println(sortedIngredientCounts);
 
-        // Sortuj składniki według liczby wystąpień malejąco
         List<String> recommendedIngredients = ingredientCounts.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(topIngredientsCount)

@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class OrderDto {
+public class CartOrderDto {
     private String tableNoId;
     private Double cost;
     private List<OrderItemDto> orderDishesDto;
