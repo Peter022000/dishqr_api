@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -35,8 +36,24 @@ public class OrderService {
     private final UserService userService;
     private SimpMessagingTemplate messagingTemplate;
 
+    public ResponseEntity<?> setPayed(AcceptedOrderDto acceptedOrderDto) {
+        Order order = acceptedOrderMapper.toEntity(acceptedOrderDto);
+        order = order.toBuilder().isPayed(true).build();
+        Order savedOrder = orderRepository.save(order);
+        return ResponseEntity.ok(acceptedOrderMapper.toDto(savedOrder));
+    }
+
     public List<AcceptedOrderDto> getOrdersByStatus(StatusType status) {
         List<Order> orders = orderRepository.findAllByStatus(status);
+        List<AcceptedOrderDto> ordersDto = acceptedOrderMapper.toDtoList(orders);
+        return ordersDto;
+    }
+    public List<AcceptedOrderDto> getOrdersByStatusToday(StatusType status) {
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Warsaw"));
+        Instant startOfDay = today.atStartOfDay(ZoneId.of("Europe/Warsaw")).toInstant();
+        Instant endOfDay = today.plusDays(1).atStartOfDay(ZoneId.of("Europe/Warsaw")).toInstant();
+
+        List<Order> orders = orderRepository.findAllByStatusAndDateBetween(status, startOfDay.toEpochMilli(), endOfDay.toEpochMilli());
         List<AcceptedOrderDto> ordersDto = acceptedOrderMapper.toDtoList(orders);
         return ordersDto;
     }
@@ -163,7 +180,6 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Send WebSocket message to the client
         messagingTemplate.convertAndSend("/topic/newOrder", acceptedOrderMapper.toDto(savedOrder));
 
         return ResponseEntity.ok(savedOrder);

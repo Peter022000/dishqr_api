@@ -153,9 +153,24 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/getOrdersByStatusToday")
+    public ResponseEntity<?> getOrdersByStatusAndTime(@RequestParam StatusType statusType) {
+        List<AcceptedOrderDto> orders = orderService.getOrdersByStatusToday(statusType);
+        orders.sort(Comparator.comparing(AcceptedOrderDto::getDate).reversed());
+        return ResponseEntity.ok(orders);
+    }
+
     @PostMapping("/changeOrderStatus")
     public ResponseEntity<?> changeOrderStatus(@RequestBody ChangeOrderStatusRequest request) {
+        if(request.getNewStatus() == StatusType.COMPLETED && !request.getAcceptedOrderDto().getIsPayed()) {
+            return ResponseEntity.badRequest().body("Order must by payed to complete");
+        }
         return orderService.changeOrderStatus(request.getAcceptedOrderDto().getId(), request.getNewStatus());
+    }
+
+    @PostMapping("/setIsPayed")
+    public ResponseEntity<?> setPayed(@RequestBody AcceptedOrderDto acceptedOrderDto) {
+        return orderService.setPayed(acceptedOrderDto);
     }
 
     @GetMapping(path = "/getRecommendation")

@@ -13,4 +13,5 @@ public interface OrderRepository extends MongoRepository <Order, String> {
     @Query("{ 'userId' : ?0 }")
     List<Order> findAllByUserId(String userId);
     List<Order> findAllByStatus(StatusType status);
+    List<Order> findAllByStatusAndDateBetween(StatusType status, Long startDate, Long endDate);
 }
