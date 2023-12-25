@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 public class AcceptedOrderMapper {
 
     private final OrderItemMapper orderItemMapper;
-    private final OrderDiscountMapper orderDiscountMapper;
     private final QrCodeService qrCodeService;
 
     public AcceptedOrderDto toDto(Order order) {

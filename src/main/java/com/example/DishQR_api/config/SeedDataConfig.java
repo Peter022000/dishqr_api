@@ -1,5 +1,6 @@
 package com.example.DishQR_api.config;
 
+import com.example.DishQR_api.dto.DiscountSettingsDto;
 import com.example.DishQR_api.model.*;
 import com.example.DishQR_api.repository.DiscountSettingsRepository;
 import com.example.DishQR_api.repository.DishRepository;
@@ -56,7 +57,7 @@ public class SeedDataConfig implements CommandLineRunner {
             log.debug("created ADMIN user - {}", admin);
         }
         if(discountSettingsRepository.count() == 0) {
-            DiscountSettings settings = DiscountSettings
+            DiscountSettingsDto settings = DiscountSettingsDto
                     .builder()
                     .isEnabled(true)
                     .discountPercentage(0.5)
