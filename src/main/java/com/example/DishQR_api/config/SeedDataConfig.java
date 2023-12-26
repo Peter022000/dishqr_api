@@ -1,6 +1,7 @@
 package com.example.DishQR_api.config;
 
 import com.example.DishQR_api.dto.DiscountSettingsDto;
+import com.example.DishQR_api.dto.QrCodeDto;
 import com.example.DishQR_api.model.*;
 import com.example.DishQR_api.repository.DiscountSettingsRepository;
 import com.example.DishQR_api.repository.DishRepository;
@@ -37,7 +38,7 @@ public class SeedDataConfig implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         if(qrCodeRepository.count() == 0){
-            QrCode qrCode = QrCode
+            QrCodeDto qrCode = QrCodeDto
                     .builder()
                     .qrCode("1")
                     .type(QrCodeType.tableNo)
