@@ -19,9 +19,9 @@ public class DishService {
     private final DishRepository dishRepository;
     private final DishMapper dishMapper;
 
-    public ResponseEntity<?> getAllDishes() {
+    public List<Dish> getAllDishes() {
         List<Dish> dishes = dishRepository.findAll();
-        return ResponseEntity.ok(dishMapper.toDtoList(dishes));
+        return dishes;
     }
 
     public Long count() {

@@ -325,4 +325,8 @@ public class OrderService {
     public DiscountSettings getDiscountSettings(){
         return discountSettingsRepository.findAll().get(0);
     }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
 }

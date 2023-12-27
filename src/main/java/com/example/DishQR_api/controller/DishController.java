@@ -1,6 +1,8 @@
 package com.example.DishQR_api.controller;
 
 import com.example.DishQR_api.dto.DishDto;
+import com.example.DishQR_api.mapper.AcceptedOrderMapper;
+import com.example.DishQR_api.mapper.DishMapper;
 import com.example.DishQR_api.service.DishService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +17,11 @@ import java.util.List;
 public class DishController {
 
     private final DishService dishService;
+    private final DishMapper dishMapper;
 
     @GetMapping(path = "/getAllDishes")
     public ResponseEntity<?> getAllDishes(){
-        return dishService.getAllDishes();
+        return ResponseEntity.ok(dishMapper.toDtoList(dishService.getAllDishes()));
     }
 
     @GetMapping(path = "/getDishById/{id}")

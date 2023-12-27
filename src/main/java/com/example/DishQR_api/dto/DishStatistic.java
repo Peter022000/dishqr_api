@@ -15,5 +15,5 @@ public class DishStatistic {
     @Id
     private String id;
     private String name;
-    private Long quantity;
+    private Integer quantity;
 }
