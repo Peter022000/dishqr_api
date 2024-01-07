@@ -316,7 +316,7 @@ public class OrderService {
     public Double checkDiscount(Boolean isUsed, Double discountPercentage, Double cost){
 
         if(isUsed){
-            cost = cost * discountPercentage;
+            cost = cost-(cost * discountPercentage);
         }
 
         return roundToTwoDecimalPlaces(cost);

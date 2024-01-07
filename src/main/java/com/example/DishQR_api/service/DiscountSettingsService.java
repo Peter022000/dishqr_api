@@ -3,7 +3,6 @@ package com.example.DishQR_api.service;
 
 import com.example.DishQR_api.dto.DiscountSettingsDto;
 import com.example.DishQR_api.mapper.DiscountSettingsMapper;
-import com.example.DishQR_api.model.DiscountSettings;
 import com.example.DishQR_api.repository.DiscountSettingsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -3,7 +3,6 @@ package com.example.DishQR_api.service;
 
 import com.example.DishQR_api.dto.QrCodeDto;
 import com.example.DishQR_api.mapper.QRCodeMapper;
-import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.model.QrCode;
 import com.example.DishQR_api.repository.QrCodeRepository;
 import lombok.AllArgsConstructor;

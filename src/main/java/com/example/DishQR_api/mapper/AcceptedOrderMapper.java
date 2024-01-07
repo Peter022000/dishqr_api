@@ -1,7 +1,6 @@
 package com.example.DishQR_api.mapper;
 
 import com.example.DishQR_api.dto.AcceptedOrderDto;
-import com.example.DishQR_api.dto.CartOrderDto;
 import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.service.QrCodeService;
 import lombok.AllArgsConstructor;

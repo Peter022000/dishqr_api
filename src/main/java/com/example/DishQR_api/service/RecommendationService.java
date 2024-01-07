@@ -2,11 +2,9 @@ package com.example.DishQR_api.service;
 
 import com.example.DishQR_api.dto.AcceptedOrderDto;
 import com.example.DishQR_api.dto.DishDto;
-import com.example.DishQR_api.dto.CartOrderDto;
 import com.example.DishQR_api.dto.OrderItemDto;
 import com.example.DishQR_api.mapper.AcceptedOrderMapper;
 import com.example.DishQR_api.mapper.DishMapper;
-import com.example.DishQR_api.mapper.CartOrderMapper;
 import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.model.Order;
 import com.example.DishQR_api.repository.DishRepository;

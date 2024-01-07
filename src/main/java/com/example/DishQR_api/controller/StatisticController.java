@@ -1,12 +1,11 @@
 package com.example.DishQR_api.controller;
 
-import com.example.DishQR_api.dto.StatisticsDto;
 import com.example.DishQR_api.model.Dish;
 import com.example.DishQR_api.model.Order;
-import com.example.DishQR_api.model.OrderItem;
 import com.example.DishQR_api.service.DishService;
 import com.example.DishQR_api.service.OrderService;
 import com.example.DishQR_api.service.StatisticService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +25,7 @@ public class StatisticController {
     private final DishService dishService;
     private final StatisticService statisticService;
 
+    @Operation(summary = "Get ordered dishes statistics")
     @GetMapping("/getStatistics")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getDishStatistics() {
