@@ -316,7 +316,7 @@ public class OrderService {
     public Double checkDiscount(Boolean isUsed, Double discountPercentage, Double cost){
 
         if(isUsed){
-            cost = cost * discountPercentage;
+            cost = cost-(cost * discountPercentage);
         }
 
         return roundToTwoDecimalPlaces(cost);
@@ -324,5 +324,9 @@ public class OrderService {
 
     public DiscountSettings getDiscountSettings(){
         return discountSettingsRepository.findAll().get(0);
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
     }
 }

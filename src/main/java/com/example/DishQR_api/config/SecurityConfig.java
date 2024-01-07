@@ -25,9 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -67,11 +65,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/users/signup", "/users/signin").permitAll()
                         .requestMatchers(HttpMethod.GET, "/dishes/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/dishes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/order/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/order/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/qrCode/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui-custom").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -8,12 +8,11 @@ import com.example.DishQR_api.repository.DishRepository;
 import com.example.DishQR_api.service.OrderDiscountService;
 import com.example.DishQR_api.service.OrderService;
 import com.example.DishQR_api.service.RecommendationService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +34,7 @@ public class OrderController {
     private final DishMapper dishMapper;
     private final DiscountSettingsMapper discountSettingsMapper;
 
+    @Operation(summary = "Accept new order")
     @PostMapping(path = "/acceptOrder")
     public ResponseEntity<?> acceptOrder(@RequestBody(required=false) CartOrderDto cartOrderDto){
 
@@ -58,11 +58,13 @@ public class OrderController {
         return orderService.acceptOrder(cartOrderDto, userId);
     }
 
+    @Operation(summary = "Get all orders")
     @GetMapping(path = "/getOrders")
     public ResponseEntity<?> getOrders(){
         return orderService.getOrders();
     }
 
+    @Operation(summary = "Add dish to order")
     @PostMapping(path = "/addToOrder")
     public ResponseEntity<?> addToOrder(@RequestBody(required=false) CartOrderDto cartOrderDto, @RequestParam String dishId){
 
@@ -92,6 +94,7 @@ public class OrderController {
         return orderService.addToOrder(cartOrderDto, dishDto);
     }
 
+    @Operation(summary = "Remove dish from order")
     @PostMapping(path = "/removeFromOrder")
     public ResponseEntity<?> removeFromOrder(@RequestBody(required=false) CartOrderDto cartOrderDto, @RequestParam String dishId){
 
@@ -126,14 +129,16 @@ public class OrderController {
         return orderService.removeFromOrder(cartOrderDto, dishDto);
     }
 
+    @Operation(summary = "Get users number of orders")
     @GetMapping(path = "/getUserNumberOfOrders")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserNumberOfOrders(){
         return orderService.getUserNumberOfOrders();
     }
 
+    @Operation(summary = "Get user orders history")
     @GetMapping(path = "/getUserHistory")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserHistory(){
         return orderService.getUserHistory();
     }
@@ -146,6 +151,7 @@ public class OrderController {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
+    @Operation(summary = "Get orders by status")
     @GetMapping("/getOrdersByStatus")
     public ResponseEntity<?> getOrdersByStatus(@RequestParam StatusType statusType) {
         List<AcceptedOrderDto> orders = orderService.getOrdersByStatus(statusType);
@@ -153,6 +159,7 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @Operation(summary = "Get orders by status accepted today")
     @GetMapping("/getOrdersByStatusToday")
     public ResponseEntity<?> getOrdersByStatusAndTime(@RequestParam StatusType statusType) {
         List<AcceptedOrderDto> orders = orderService.getOrdersByStatusToday(statusType);
@@ -160,6 +167,7 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @Operation(summary = "Change order status")
     @PostMapping("/changeOrderStatus")
     public ResponseEntity<?> changeOrderStatus(@RequestBody ChangeOrderStatusRequest request) {
         if(request.getNewStatus() == StatusType.COMPLETED && !request.getAcceptedOrderDto().getIsPayed()) {
@@ -168,13 +176,15 @@ public class OrderController {
         return orderService.changeOrderStatus(request.getAcceptedOrderDto().getId(), request.getNewStatus());
     }
 
+    @Operation(summary = "Set order is payed")
     @PostMapping("/setIsPayed")
     public ResponseEntity<?> setPayed(@RequestBody AcceptedOrderDto acceptedOrderDto) {
         return orderService.setPayed(acceptedOrderDto);
     }
 
+    @Operation(summary = "Get recommended dish for user")
     @GetMapping(path = "/getRecommendation")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getRecommendation(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
