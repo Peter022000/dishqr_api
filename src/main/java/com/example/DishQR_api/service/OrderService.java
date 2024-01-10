@@ -145,6 +145,10 @@ public class OrderService {
 
         List<OrderItemDto> orderItems = cartOrderDto.getOrderDishesDto();
 
+        if(cartOrderDto.getOrderDishesDto().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is empty");
+        }
+
         if(!validateDishesInOrder(orderItems)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One of the dishes is not valid");
         }

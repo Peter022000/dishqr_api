@@ -65,7 +65,7 @@ public class SeedDataConfig implements CommandLineRunner {
                     .ordersRequired(2)
                     .build();
             discountSettingsService.save(settings);
-            System.out.println("created discount settings");
+            log.debug("created discount settings");
         }
         if (dishRepository.count() == 0) {
             DishesConfig dishesConfig = YamlLoader.loadDishesConfig("dishes.yaml");
